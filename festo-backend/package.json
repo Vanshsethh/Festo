@@ -1,0 +1,35 @@
+{
+  "name": "festo-backend",
+  "version": "1.0.0",
+  "description": "Backend modular monolith API & BullMQ workers for Festo (JavaScript)",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start:api": "node src/server.js",
+    "start:worker": "node src/workers/index.js",
+    "dev:api": "node --watch src/server.js",
+    "dev:worker": "node --watch src/workers/index.js",
+    "migrate:up": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down",
+    "migrate:create": "node-pg-migrate create",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "argon2": "^0.41.1",
+    "bullmq": "^5.41.5",
+    "cloudinary": "^2.5.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-pg-migrate": "^7.9.0",
+    "pg": "^8.13.3",
+    "qrcode": "^1.5.4",
+    "rate-limit-redis": "^4.2.0",
+    "resend": "^4.1.2",
+    "zod": "^3.24.2"
+  }
+}
