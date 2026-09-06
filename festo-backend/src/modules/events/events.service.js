@@ -61,17 +61,35 @@ export const cancelEvent = async (user, id) => {
   return eventsRepo.updateStatus(id, 'CANCELLED');
 };
 
+export const deleteEvent = async (user, id) => {
+  const event = await ownedEvent(user, id);
+  await eventsRepo.deleteById(id);
+  return { success: true, id };
+};
+
+export const autoDeleteConcludedEvents = async () => {
+  return eventsRepo.autoDeleteConcluded();
+};
+
 export const getPublicEvent = async (slug) => {
   const event = await eventsRepo.findBySlug(slug);
   if (!event) throw fail('Event not found.', 404);
-  // For MVP, we show all events regardless of status (they're all published immediately)
+  if (new Date(event.end_date) < new Date()) {
+    // Automatically purge concluded event from database and return 404
+    await eventsRepo.deleteById(event.id).catch(() => {});
+    throw fail('This event has concluded and is no longer available.', 404);
+  }
   return withDisplayStatus(event);
 };
+
 export const listPublicEvents = async (query) => {
+  // Purge concluded events so they never remain on the website
+  eventsRepo.autoDeleteConcluded().catch((err) => console.error('Auto-delete concluded events error:', err.message));
   const offset = (query.page - 1) * query.limit;
   const [events, total] = await Promise.all([eventsRepo.listPublic({ ...query, offset }), eventsRepo.countPublic(query)]);
   return { events: events.map(withDisplayStatus), pagination: { total, page: query.page, limit: query.limit, totalPages: Math.max(1, Math.ceil(total / query.limit)) } };
 };
+
 export const listMyEvents = async (user) => {
   // For MVP, show all events created by the user
   return (await eventsRepo.listForUser(user.id)).map(withDisplayStatus);

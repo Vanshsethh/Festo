@@ -6,11 +6,20 @@ export const EVENT_CATEGORIES = [
   'DRAMA_THEATRE', 'ART_DESIGN', 'OTHER',
 ];
 
-const optionalUrl = z.string().url('Poster URL must be valid.').nullable().optional().or(z.literal(''));
+const optionalUrl = z.preprocess((val) => {
+  if (typeof val !== 'string') return val;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}, z.string().url('Poster URL must be a valid URL.').nullable().optional());
 
 const eventFields = {
   college_id: z.string().uuid('Please choose a college.'),
   title: z.string().trim().min(3, 'Title must be at least 3 characters.').max(200),
+  slug: z.string().trim().max(100).optional(),
   description: z.string().trim().max(10000).nullable().optional(),
   category: z.enum(EVENT_CATEGORIES),
   poster_url: optionalUrl,
@@ -36,6 +45,7 @@ export const createEventSchema = z.object(eventFields).superRefine(datesAreValid
 export const updateEventSchema = z.object({
   college_id: eventFields.college_id.optional(),
   title: eventFields.title.optional(),
+  slug: z.string().trim().max(100).optional(),
   description: eventFields.description,
   category: eventFields.category.optional(),
   poster_url: optionalUrl,
@@ -46,7 +56,7 @@ export const updateEventSchema = z.object({
   end_date: eventFields.end_date.optional(),
   registration_deadline: eventFields.registration_deadline.optional(),
   capacity: eventFields.capacity,
-}).strict();
+});
 
 export const eventsQuerySchema = z.object({
   search: z.string().trim().max(200).optional(),

@@ -30,6 +30,7 @@ export const HostEventPage = () => {
     capacity: '',
     poster_url: '',
   });
+  const [posterPreviewStatus, setPosterPreviewStatus] = useState('idle'); // 'idle' | 'loading' | 'loaded' | 'error'
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -40,13 +41,20 @@ export const HostEventPage = () => {
   const colleges = collegeData?.data?.colleges || [];
 
   const createEventMutation = useMutation({
-    mutationFn: (data) => eventsService.create({
-      ...data,
-      capacity: data.capacity ? Number(data.capacity) : null,
-      start_date: new Date(data.start_date).toISOString(),
-      end_date: new Date(data.end_date).toISOString(),
-      registration_deadline: new Date(data.registration_deadline).toISOString(),
-    }),
+    mutationFn: (data) => {
+      let normalizedPosterUrl = data.poster_url?.trim() || null;
+      if (normalizedPosterUrl && !/^https?:\/\//i.test(normalizedPosterUrl)) {
+        normalizedPosterUrl = `https://${normalizedPosterUrl}`;
+      }
+      return eventsService.create({
+        ...data,
+        poster_url: normalizedPosterUrl,
+        capacity: data.capacity ? Number(data.capacity) : null,
+        start_date: new Date(data.start_date).toISOString(),
+        end_date: new Date(data.end_date).toISOString(),
+        registration_deadline: new Date(data.registration_deadline).toISOString(),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['events', 'mine'] });
@@ -325,8 +333,8 @@ export const HostEventPage = () => {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="poster_url">Event Poster Image URL (optional)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="poster_url">Event Banner / Poster URL (optional)</Label>
               <div className="relative">
                 <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -335,12 +343,73 @@ export const HostEventPage = () => {
                   placeholder="https://.../event-poster.jpg"
                   className="pl-10"
                   value={formData.poster_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, poster_url: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData(prev => ({ ...prev, poster_url: val }));
+                    if (val.trim()) {
+                      setPosterPreviewStatus('loading');
+                    } else {
+                      setPosterPreviewStatus('idle');
+                    }
+                  }}
+                  onBlur={() => {
+                    const trimmed = formData.poster_url.trim();
+                    if (trimmed && !/^https?:\/\//i.test(trimmed)) {
+                      setFormData(prev => ({ ...prev, poster_url: `https://${trimmed}` }));
+                    }
+                  }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Recommended aspect ratio: 16:9 or 3:2. Displays on event cards and detail page.
+              <p className="text-xs text-muted-foreground">
+                Paste any image URL (JPEG, PNG, WebP). Displays without distortion on event cards and detail pages.
               </p>
+
+              {/* Live Banner Preview */}
+              {formData.poster_url.trim() && (
+                <div className="mt-2 rounded-xl border border-purple-500/20 bg-background/80 overflow-hidden shadow-inner p-3 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-purple-300 flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5" /> Banner Preview
+                    </span>
+                    {posterPreviewStatus === 'loading' && (
+                      <span className="text-muted-foreground flex items-center gap-1">Checking image…</span>
+                    )}
+                    {posterPreviewStatus === 'loaded' && (
+                      <span className="text-emerald-400 font-medium flex items-center gap-1">✓ Image loaded successfully</span>
+                    )}
+                    {posterPreviewStatus === 'error' && (
+                      <span className="text-destructive font-medium flex items-center gap-1">✕ Unable to load image link</span>
+                    )}
+                  </div>
+
+                  <div className="relative w-full aspect-[16/9] max-h-56 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center border border-border/50">
+                    {/* Blurred background ambience */}
+                    <img
+                      src={formData.poster_url.trim().startsWith('http') ? formData.poster_url.trim() : `https://${formData.poster_url.trim()}`}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
+                      referrerPolicy="no-referrer"
+                    />
+                    {/* Main contained image */}
+                    <img
+                      src={formData.poster_url.trim().startsWith('http') ? formData.poster_url.trim() : `https://${formData.poster_url.trim()}`}
+                      alt="Event Banner Preview"
+                      referrerPolicy="no-referrer"
+                      className="relative z-10 max-h-full max-w-full object-contain"
+                      onLoad={() => setPosterPreviewStatus('loaded')}
+                      onError={() => setPosterPreviewStatus('error')}
+                    />
+                    {posterPreviewStatus === 'error' && (
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/90 p-4 text-center text-xs text-muted-foreground space-y-1">
+                        <AlertCircle className="w-6 h-6 text-destructive mb-1" />
+                        <p className="font-semibold text-foreground">Could not preview image</p>
+                        <p className="text-[11px] max-w-xs">Make sure the URL points directly to an image file and is publicly accessible.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="rounded-xl bg-purple-500/5 border border-purple-500/20 p-4 text-xs text-muted-foreground">

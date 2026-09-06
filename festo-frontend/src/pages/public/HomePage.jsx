@@ -207,21 +207,37 @@ export const HomePage = () => {
 };
 
 const EventCard = ({ event }) => {
+  const [imgError, setImgError] = React.useState(false);
   const formattedDate = dateFormatter(event.start_date);
+  const hasPoster = Boolean(event.poster_url?.trim()) && !imgError;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      {event.poster_url ? (
-        <img
-          src={event.poster_url}
-          alt={event.title}
-          className="w-full h-48 object-cover"
-        />
-      ) : (
-        <div className="w-full h-48 bg-purple-50 flex items-center justify-center">
-          <CalendarDays className="w-10 h-10 text-purple-400" />
-        </div>
-      )}
+    <Card className="overflow-hidden hover:shadow-xl transition-all duration-200 border-border/60 flex flex-col">
+      <div className="relative aspect-[16/9] w-full bg-slate-950 overflow-hidden flex items-center justify-center">
+        {hasPoster ? (
+          <>
+            <img
+              src={event.poster_url}
+              alt=""
+              aria-hidden="true"
+              referrerPolicy="no-referrer"
+              className="absolute inset-0 w-full h-full object-cover blur-md opacity-30 scale-105"
+            />
+            <img
+              src={event.poster_url}
+              alt={event.title}
+              referrerPolicy="no-referrer"
+              className="relative z-10 w-full h-full object-cover"
+              onError={() => setImgError(true)}
+            />
+          </>
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-purple-900/30 to-indigo-900/20 flex flex-col items-center justify-center text-purple-300">
+            <CalendarDays className="w-10 h-10 mb-1" />
+            <span className="text-[10px] font-semibold tracking-wider uppercase text-purple-400/80">{event.category}</span>
+          </div>
+        )}
+      </div>
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center space-x-2 mb-2">
           <span className="px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full">

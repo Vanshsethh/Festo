@@ -12,6 +12,7 @@ router.get('/mine', authenticate, authorize(['USER', 'ORGANIZER']), controller.m
 router.post('/', authenticate, authorize(['USER', 'ORGANIZER']), validateBody(createEventSchema), controller.create);
 router.patch('/:id', authenticate, authorize(['USER', 'ORGANIZER']), validateBody(updateEventSchema), controller.update);
 router.post('/:id/cancel', authenticate, authorize(['USER', 'ORGANIZER']), controller.cancel);
+router.delete('/:id', authenticate, authorize(['USER', 'ORGANIZER', 'ADMIN']), controller.remove);
 // Removed submit, approve, reject endpoints as they're not needed for MVP
 router.post('/:eventId/register', authenticate, authorize(['USER']), registrationsController.create);
 router.get('/:slug', controller.getOne);

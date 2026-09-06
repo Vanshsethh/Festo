@@ -50,7 +50,7 @@ export const updateStatus = async (id, status) => {
 };
 
 export const listPublic = async ({ search, category, college_id, limit, offset }) => {
-  let query = `${selectEvent} WHERE e.status = 'PUBLISHED' AND c.verification_status = 'VERIFIED'`;
+  let query = `${selectEvent} WHERE e.status = 'PUBLISHED' AND c.verification_status = 'VERIFIED' AND e.end_date >= NOW()`;
   const values = [];
   if (search) { values.push(`%${search}%`); query += ` AND (e.title ILIKE $${values.length} OR e.description ILIKE $${values.length} OR c.name ILIKE $${values.length})`; }
   if (category) { values.push(category); query += ` AND e.category = $${values.length}`; }
@@ -61,7 +61,7 @@ export const listPublic = async ({ search, category, college_id, limit, offset }
 };
 
 export const countPublic = async ({ search, category, college_id }) => {
-  let query = `SELECT COUNT(*) AS total FROM events e JOIN colleges c ON c.id = e.college_id WHERE e.status = 'PUBLISHED' AND c.verification_status = 'VERIFIED'`;
+  let query = `SELECT COUNT(*) AS total FROM events e JOIN colleges c ON c.id = e.college_id WHERE e.status = 'PUBLISHED' AND c.verification_status = 'VERIFIED' AND e.end_date >= NOW()`;
   const values = [];
   if (search) { values.push(`%${search}%`); query += ` AND (e.title ILIKE $${values.length} OR e.description ILIKE $${values.length} OR c.name ILIKE $${values.length})`; }
   if (category) { values.push(category); query += ` AND e.category = $${values.length}`; }
@@ -70,4 +70,15 @@ export const countPublic = async ({ search, category, college_id }) => {
 };
 
 export const listForCollege = async (collegeId) => (await pool.query(`${selectEvent} WHERE e.college_id = $1 ORDER BY e.updated_at DESC`, [collegeId])).rows;
+export const listForUser = async (userId) => (await pool.query(`${selectEvent} WHERE e.created_by = $1 ORDER BY e.created_at DESC`, [userId])).rows;
 export const listPending = async () => (await pool.query(`${selectEvent} WHERE e.status = 'PENDING_APPROVAL' ORDER BY e.created_at ASC`)).rows;
+
+export const deleteById = async (id) => {
+  await pool.query('DELETE FROM events WHERE id = $1', [id]);
+  return true;
+};
+
+export const autoDeleteConcluded = async () => {
+  const result = await pool.query('DELETE FROM events WHERE end_date < NOW() RETURNING id, title');
+  return result.rows;
+};

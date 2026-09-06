@@ -2,6 +2,7 @@ import * as registrationsRepo from './registrations.repo.js';
 import { withTransaction } from '../../db/transaction.js';
 import { AppError } from '../../middleware/errorHandler.js';
 import { enqueueTicketGeneration } from '../../workers/queues.js';
+import { generateTicketsForRegistration } from '../passes/passes.service.js';
 import { createPending } from '../notifications/notifications.repo.js';
 import { enqueueNotificationSafely } from '../notifications/notifications.service.js';
 
@@ -38,7 +39,8 @@ export const registerForEvent = async (user, eventId, quantity = 1) => {
   try {
     await enqueueTicketGeneration(registration.id, quantity);
   } catch (error) {
-    console.error(`Could not enqueue ticket generation for registration ${registration.id}:`, error.message);
+    console.warn(`Redis queue failed, generating ${quantity} ticket(s) directly:`, error.message);
+    await generateTicketsForRegistration(registration.id, quantity);
   }
   await enqueueNotificationSafely(notification?.id);
 

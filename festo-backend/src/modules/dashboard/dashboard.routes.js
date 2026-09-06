@@ -5,7 +5,8 @@ import * as controller from './dashboard.controller.js';
 
 const router = Router();
 
-router.get('/student', authenticate, authorize(['USER']), controller.student);
+router.get('/user', authenticate, authorize(['USER', 'ORGANIZER']), controller.student);
+router.get('/student', authenticate, authorize(['USER', 'ORGANIZER']), controller.student);
 router.get('/college', authenticate, authorize(['USER', 'ORGANIZER']), controller.college);
 // Replaced admin route with organizer route
 router.get('/organizer', authenticate, authorize(['ORGANIZER']), controller.organizer);

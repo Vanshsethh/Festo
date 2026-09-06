@@ -26,8 +26,8 @@ export const create = async ({ registrationId, ticketNumber, ticketCode, qrToken
 
 export const listForUser = async (userId) => {
   const result = await pool.query(
-    `SELECT r.id AS registration_id, r.status AS registration_status, r.registered_at,
-            t.id AS ticket_id, t.ticket_code, t.qr_token, t.status AS ticket_status, t.created_at AS ticket_created_at,
+    `SELECT r.id AS registration_id, r.status AS registration_status, r.registered_at, r.quantity,
+            t.id AS ticket_id, t.ticket_number, t.ticket_code, t.qr_token, t.status AS ticket_status, t.created_at AS ticket_created_at,
             e.id AS event_id, e.title, e.slug, e.category, e.poster_url, e.venue,
             e.start_date, e.end_date, e.status AS event_status,
             c.name AS college_name, c.slug AS college_slug
@@ -36,7 +36,7 @@ export const listForUser = async (userId) => {
      JOIN colleges c ON c.id = e.college_id
      JOIN tickets t ON t.registration_id = r.id
      WHERE r.user_id = $1 AND r.status = 'CONFIRMED'
-     ORDER BY e.start_date ASC, t.ticket_number`,
+     ORDER BY e.start_date ASC, t.ticket_number ASC`,
     [userId]
   );
   return result.rows;
@@ -44,9 +44,9 @@ export const listForUser = async (userId) => {
 
 export const findOwnedById = async (ticketId, userId) => {
   const result = await pool.query(
-    `SELECT t.id, t.ticket_code, t.qr_token, t.status, t.created_at,
+    `SELECT t.id, t.ticket_number, t.ticket_code, t.qr_token, t.status, t.created_at,
             t.registration_id,
-            r.id AS registration_id, r.status AS registration_status,
+            r.id AS registration_id, r.status AS registration_status, r.quantity,
             e.id AS event_id, e.title, e.slug, e.category, e.venue, e.start_date, e.end_date,
             c.name AS college_name
      FROM tickets t
@@ -59,14 +59,29 @@ export const findOwnedById = async (ticketId, userId) => {
   return result.rows[0] || null;
 };
 
-export const listOutstandingRegistrationIds = async () => {
+export const listOutstandingRegistrations = async () => {
   const result = await pool.query(
-    `SELECT r.id
+    `SELECT r.id, r.quantity, COUNT(t.id)::int AS ticket_count
      FROM registrations r
      LEFT JOIN tickets t ON t.registration_id = r.id
-     WHERE r.status = 'CONFIRMED' AND t.id IS NULL`
+     WHERE r.status = 'CONFIRMED'
+     GROUP BY r.id, r.quantity
+     HAVING COUNT(t.id) < r.quantity`
   );
-  return result.rows.map(({ id }) => id);
+  return result.rows;
+};
+
+export const listOutstandingForUser = async (userId) => {
+  const result = await pool.query(
+    `SELECT r.id, r.quantity, COUNT(t.id)::int AS ticket_count
+     FROM registrations r
+     LEFT JOIN tickets t ON t.registration_id = r.id
+     WHERE r.user_id = $1 AND r.status = 'CONFIRMED'
+     GROUP BY r.id, r.quantity
+     HAVING COUNT(t.id) < r.quantity`,
+    [userId]
+  );
+  return result.rows;
 };
 
 export const findByRegistrationIdAndNumber = async (registrationId, ticketNumber) => {

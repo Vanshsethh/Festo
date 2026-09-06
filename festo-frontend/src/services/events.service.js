@@ -8,6 +8,7 @@ export const eventsService = {
   async update(id, data) { return (await apiClient.patch(`/events/${id}`, data)).data; },
   async submit(id) { return (await apiClient.post(`/events/${id}/submit`)).data; },
   async cancel(id) { return (await apiClient.post(`/events/${id}/cancel`)).data; },
+  async delete(id) { return (await apiClient.delete(`/events/${id}`)).data; },
   async pending() { return (await apiClient.get('/events/admin/pending')).data; },
   async approve(id) { return (await apiClient.post(`/events/${id}/approve`)).data; },
   async reject(id) { return (await apiClient.post(`/events/${id}/reject`)).data; },

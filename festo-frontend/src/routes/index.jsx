@@ -2,6 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from '../pages/public/HomePage.jsx';
 import { LoginPage } from '../pages/auth/LoginPage.jsx';
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage.jsx';
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage.jsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.jsx';
 import { CollegesDirectoryPage } from '../pages/public/CollegesDirectoryPage.jsx';
 import { CollegeDetailPage } from '../pages/public/CollegeDetailPage.jsx';
@@ -23,6 +25,8 @@ export const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/colleges" element={<CollegesDirectoryPage />} />
       <Route path="/colleges/:identifier" element={<CollegeDetailPage />} />

@@ -38,22 +38,27 @@ export const generateTicketsForRegistration = async (registrationId, quantity) =
 };
 
 export const recoverOutstandingTickets = async () => {
-  const registrationIds = await passesRepo.listOutstandingRegistrationIds();
-  await Promise.all(registrationIds.map(async (registrationId) => {
-    // Get the registration to find quantity
-    const registrationResult = await pool.query(
-      'SELECT quantity FROM registrations WHERE id = $1',
-      [registrationId]
-    );
-    if (registrationResult.rows.length > 0) {
-      const quantity = registrationResult.rows[0].quantity || 1;
-      await enqueueTicketGeneration(registrationId, quantity);
+  const registrations = await passesRepo.listOutstandingRegistrations();
+  await Promise.all(registrations.map(async ({ id, quantity }) => {
+    try {
+      await enqueueTicketGeneration(id, quantity || 1);
+    } catch {
+      await generateTicketsForRegistration(id, quantity || 1);
     }
   }));
-  return registrationIds.length;
+  return registrations.length;
 };
 
-export const listMyTickets = (user) => passesRepo.listForUser(user.id);
+export const listMyTickets = async (user) => {
+  // Automatically reconcile tickets if worker has not processed them yet
+  const outstanding = await passesRepo.listOutstandingForUser(user.id);
+  if (outstanding.length > 0) {
+    for (const reg of outstanding) {
+      await generateTicketsForRegistration(reg.id, reg.quantity || 1);
+    }
+  }
+  return passesRepo.listForUser(user.id);
+};
 
 export const getMyTicket = async (user, ticketId) => {
   const ticket = await passesRepo.findOwnedById(ticketId, user.id);
