@@ -21,7 +21,13 @@ export const createApp = () => {
   app.disable('x-powered-by');
   if (env.NODE_ENV === 'production') app.set('trust proxy', 1);
   const corsOrigins = env.CORS_ORIGIN.split(',').map((origin) => origin.trim());
-  if (env.NODE_ENV === 'development') corsOrigins.push('http://localhost:5174');
+  if (env.NODE_ENV === 'development') {
+    corsOrigins.push(
+      'http://localhost:5174',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174'
+    );
+  }
 
   // Basic security & parsing middleware
   app.use(

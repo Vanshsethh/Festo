@@ -10,11 +10,21 @@ const optionalUrl = z.preprocess((val) => {
   if (typeof val !== 'string') return val;
   const trimmed = val.trim();
   if (!trimmed) return null;
+  if (trimmed.startsWith('data:image/')) return trimmed;
   if (!/^https?:\/\//i.test(trimmed)) {
     return `https://${trimmed}`;
   }
   return trimmed;
-}, z.string().url('Poster URL must be a valid URL.').nullable().optional());
+}, z.string().refine((val) => {
+  if (val.startsWith('data:image/')) return true;
+  try {
+    new URL(val);
+    return true;
+  } catch {
+    return false;
+  }
+}, { message: 'Poster URL must be a valid URL or image.' }).nullable().optional());
+
 
 const eventFields = {
   college_id: z.string().uuid('Please choose a college.'),

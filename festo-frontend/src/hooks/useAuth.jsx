@@ -20,6 +20,9 @@ export const AuthProvider = ({ children }) => {
         const res = await authService.getMe();
         return res?.data?.user || null;
       } catch (err) {
+        if (err.response?.status === 401) {
+          localStorage.removeItem('festo_token');
+        }
         return null;
       }
     },
@@ -32,20 +35,29 @@ export const AuthProvider = ({ children }) => {
   const loginMutation = useMutation({
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (res) => {
-      queryClient.setQueryData(['auth', 'me'], res.data.user);
+      const token = res?.data?.token;
+      if (token) {
+        localStorage.setItem('festo_token', token);
+      }
+      queryClient.setQueryData(['auth', 'me'], res?.data?.user);
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: (data) => authService.register(data),
     onSuccess: (res) => {
-      queryClient.setQueryData(['auth', 'me'], res.data.user);
+      const token = res?.data?.token;
+      if (token) {
+        localStorage.setItem('festo_token', token);
+      }
+      queryClient.setQueryData(['auth', 'me'], res?.data?.user);
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: () => authService.logout(),
     onSuccess: () => {
+      localStorage.removeItem('festo_token');
       queryClient.setQueryData(['auth', 'me'], null);
       queryClient.clear();
     },

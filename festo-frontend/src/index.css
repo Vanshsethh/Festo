@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 222 47% 7%;
+    --background: 270 18% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 222 42% 11%;
+    --card: 264 20% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 42% 11%;
+    --popover: 264 20% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 263 85% 65%;
+    --primary: 320 91% 62%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 222 47% 14%;
+    --secondary: 266 22% 13%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 222 32% 16%;
+    --muted: 266 20% 14%;
     --muted-foreground: 215 20% 72%;
 
-    --accent: 216 34% 17%;
+    --accent: 290 35% 17%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 222 28% 23%;
-    --input: 222 28% 23%;
-    --ring: 263 85% 65%;
+    --border: 280 22% 20%;
+    --input: 280 22% 20%;
+    --ring: 320 91% 62%;
 
     --radius: 0.75rem;
   }
@@ -40,4 +40,91 @@ body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+}
+
+.festo-hero {
+  min-height: 430px;
+  container-type: inline-size;
+  background:
+    radial-gradient(circle at 14% 90%, rgba(190, 24, 93, 0.18), transparent 34%),
+    radial-gradient(circle at 85% 10%, rgba(139, 92, 246, 0.18), transparent 31%),
+    linear-gradient(125deg, #0d0911 0%, #100919 48%, #08090f 100%);
+}
+
+.festo-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+  background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to right, black, transparent 70%);
+}
+
+.festo-hero-wordmark {
+  width: 100%;
+  white-space: nowrap;
+  font-family: 'Apple Chancery', 'URW Chancery L', 'Brush Script MT', cursive;
+  font-size: clamp(5rem, 15.5cqi, 14rem);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -0.07em;
+  background: linear-gradient(105deg, #fff7fb 3%, #fbcfe8 31%, #e879f9 58%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 10px 28px rgba(217, 70, 239, 0.24));
+}
+
+@media (max-width: 640px) {
+  .festo-hero-wordmark {
+    font-size: clamp(4.4rem, 17vw, 6.5rem);
+    letter-spacing: -0.09em;
+  }
+}
+
+@keyframes glowing-border-spin {
+  to { transform: rotate(1turn); }
+}
+
+.glowing-effect {
+  position: absolute;
+  z-index: 0;
+  inset: -1px;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.glowing-effect::before {
+  content: '';
+  position: absolute;
+  inset: -75%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 130deg,
+    rgba(192, 132, 252, 0.2) 175deg,
+    rgba(232, 121, 249, 0.95) 210deg,
+    rgba(129, 140, 248, 0.9) 245deg,
+    transparent 290deg,
+    transparent 360deg
+  );
+  animation: glowing-border-spin 7s linear infinite;
+}
+
+.glowing-effect::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: hsl(var(--card));
+}
+
+.glowing-effect--blue::before {
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 135deg, rgba(34, 211, 238, 0.25) 180deg, rgba(96, 165, 250, 0.95) 225deg, rgba(129, 140, 248, 0.85) 260deg, transparent 305deg, transparent 360deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowing-effect::before { animation: none; }
 }

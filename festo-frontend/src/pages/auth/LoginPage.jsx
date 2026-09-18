@@ -7,6 +7,8 @@ import { Label } from '../../components/ui/label.jsx';
 import { Button } from '../../components/ui/button.jsx';
 import { Sparkles, AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
 
+import { FestoLogo } from '../../components/common/FestoLogo.jsx';
+
 export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,7 +19,7 @@ export const LoginPage = () => {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || (typeof location.state?.from === 'string' ? location.state.from : null) || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,10 +44,9 @@ export const LoginPage = () => {
     <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6">
         {/* Logo & Headline */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            Welcome back to Festo
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <FestoLogo size="lg" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
             Sign in to your account
@@ -134,6 +135,7 @@ export const LoginPage = () => {
                 Don't have an account yet?{' '}
                 <Link
                   to="/register"
+                  state={location.state}
                   className="font-semibold text-purple-400 hover:text-purple-300 underline underline-offset-4"
                 >
                   Create student account

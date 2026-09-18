@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { eventsService } from '../../services/events.service.js';
@@ -8,13 +8,64 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from '../../components/ui/input.jsx';
 import { Label } from '../../components/ui/label.jsx';
 import { Button } from '../../components/ui/button.jsx';
-import { Building2, Sparkles, AlertCircle, CheckCircle2, Clock, MapPin, ShieldCheck, ArrowRight, Image as ImageIcon, CalendarDays, Users } from 'lucide-react';
+import { Building2, Sparkles, AlertCircle, CheckCircle2, Clock, MapPin, ShieldCheck, ArrowRight, Image as ImageIcon, CalendarDays, Users, Upload, X, Wand2 } from 'lucide-react';
 import { VerifiedBadge } from '../../components/colleges/VerifiedBadge.jsx';
+
+const BANNER_PRESETS = [
+  { label: '🎪 Campus Fest', url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80' },
+  { label: '💻 Hackathon', url: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80' },
+  { label: '🎸 Concert & Music', url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80' },
+  { label: '🎭 Cultural & Arts', url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80' },
+  { label: '🏆 Sports League', url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80' },
+  { label: '🎮 Gaming & E-Sports', url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80' },
+];
+
+const normalizeImageUrl = (input) => {
+  if (!input || typeof input !== 'string') return '';
+  let url = input.trim();
+  if (!url) return '';
+  if (url.startsWith('data:image/')) return url;
+
+  // Google Drive preview/view to direct image CDN
+  if (url.includes('drive.google.com')) {
+    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (fileIdMatch && fileIdMatch[1]) {
+      return `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`;
+    }
+  }
+
+  // Dropbox share link to direct download
+  if (url.includes('dropbox.com')) {
+    return url.replace(/[?&]dl=0/, '').replace(/[?&]raw=1/, '') + (url.includes('?') ? '&raw=1' : '?raw=1');
+  }
+
+  // Imgur page link to direct image
+  if (/^https?:\/\/imgur\.com\/([a-zA-Z0-9]+)$/i.test(url)) {
+    const match = url.match(/^https?:\/\/imgur\.com\/([a-zA-Z0-9]+)$/i);
+    return `https://i.imgur.com/${match[1]}.jpg`;
+  }
+
+  // Unsplash photo page link to direct photo
+  if (url.includes('unsplash.com/photos/')) {
+    const parts = url.split('/photos/')[1]?.split(/[?#/]/)[0];
+    if (parts) {
+      const id = parts.split('-').pop() || parts;
+      return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`;
+    }
+  }
+
+  if (!/^https?:\/\//i.test(url)) {
+    return `https://${url}`;
+  }
+
+  return url;
+};
 
 export const HostEventPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -40,10 +91,61 @@ export const HostEventPage = () => {
   });
   const colleges = collegeData?.data?.colleges || [];
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file (JPEG, PNG, WebP).');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Selected image is larger than 8MB. Please choose a smaller image.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const maxWidth = 1200;
+        const maxHeight = 800;
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          if (width / maxWidth > height / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setFormData(prev => ({ ...prev, poster_url: compressedDataUrl }));
+        setPosterPreviewStatus('loaded');
+      };
+      img.src = result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearBanner = () => {
+    setFormData(prev => ({ ...prev, poster_url: '' }));
+    setPosterPreviewStatus('idle');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const createEventMutation = useMutation({
     mutationFn: (data) => {
       let normalizedPosterUrl = data.poster_url?.trim() || null;
-      if (normalizedPosterUrl && !/^https?:\/\//i.test(normalizedPosterUrl)) {
+      if (normalizedPosterUrl && !normalizedPosterUrl.startsWith('data:image/') && !/^https?:\/\//i.test(normalizedPosterUrl)) {
         normalizedPosterUrl = `https://${normalizedPosterUrl}`;
       }
       return eventsService.create({
@@ -333,20 +435,84 @@ export const HostEventPage = () => {
               </p>
             </div>
 
-            <div className="space-y-3">
-              <Label htmlFor="poster_url">Event Banner / Poster URL (optional)</Label>
+            <div className="space-y-4 rounded-xl border border-purple-500/20 bg-muted/20 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="poster_url" className="font-bold text-sm">Event Banner / Poster</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Upload an image file from your device, pick a curated preset, or paste an image URL.
+                  </p>
+                </div>
+                {formData.poster_url && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearBanner}
+                    className="h-8 text-xs text-destructive hover:bg-destructive/10 gap-1"
+                  >
+                    <X className="w-3.5 h-3.5" /> Clear Banner
+                  </Button>
+                )}
+              </div>
+
+              {/* Upload from device & Presets */}
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="gap-1.5 border-purple-500/30 hover:bg-purple-500/10 text-xs font-semibold text-purple-300"
+                >
+                  <Upload className="w-3.5 h-3.5 text-purple-400" />
+                  Upload from device
+                </Button>
+                <span className="text-xs text-muted-foreground">or quick presets:</span>
+              </div>
+
+              {/* Presets Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {BANNER_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, poster_url: preset.url }));
+                      setPosterPreviewStatus('loading');
+                    }}
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                      formData.poster_url === preset.url
+                        ? 'border-purple-400 bg-purple-500/20 text-purple-200 font-semibold shadow-sm shadow-purple-500/20'
+                        : 'border-border/60 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* URL Input */}
               <div className="relative">
                 <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="poster_url"
-                  type="url"
-                  placeholder="https://.../event-poster.jpg"
-                  className="pl-10"
-                  value={formData.poster_url}
+                  placeholder="Paste direct image URL or Google Drive link (https://...)"
+                  className="pl-10 text-xs sm:text-sm font-mono"
+                  value={formData.poster_url.startsWith('data:image/') ? '[Custom Image Uploaded from Device]' : formData.poster_url}
+                  disabled={formData.poster_url.startsWith('data:image/')}
                   onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData(prev => ({ ...prev, poster_url: val }));
-                    if (val.trim()) {
+                    const rawVal = e.target.value;
+                    const normalized = normalizeImageUrl(rawVal);
+                    setFormData(prev => ({ ...prev, poster_url: normalized }));
+                    if (normalized) {
                       setPosterPreviewStatus('loading');
                     } else {
                       setPosterPreviewStatus('idle');
@@ -354,19 +520,16 @@ export const HostEventPage = () => {
                   }}
                   onBlur={() => {
                     const trimmed = formData.poster_url.trim();
-                    if (trimmed && !/^https?:\/\//i.test(trimmed)) {
-                      setFormData(prev => ({ ...prev, poster_url: `https://${trimmed}` }));
+                    if (trimmed && !trimmed.startsWith('data:image/')) {
+                      setFormData(prev => ({ ...prev, poster_url: normalizeImageUrl(trimmed) }));
                     }
                   }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Paste any image URL (JPEG, PNG, WebP). Displays without distortion on event cards and detail pages.
-              </p>
 
               {/* Live Banner Preview */}
               {formData.poster_url.trim() && (
-                <div className="mt-2 rounded-xl border border-purple-500/20 bg-background/80 overflow-hidden shadow-inner p-3 space-y-2">
+                <div className="rounded-xl border border-purple-500/20 bg-slate-950/80 overflow-hidden shadow-inner p-3 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-purple-300 flex items-center gap-1.5">
                       <ImageIcon className="w-3.5 h-3.5" /> Banner Preview
@@ -378,14 +541,14 @@ export const HostEventPage = () => {
                       <span className="text-emerald-400 font-medium flex items-center gap-1">✓ Image loaded successfully</span>
                     )}
                     {posterPreviewStatus === 'error' && (
-                      <span className="text-destructive font-medium flex items-center gap-1">✕ Unable to load image link</span>
+                      <span className="text-amber-400 font-medium flex items-center gap-1">⚠ Preview issue with link</span>
                     )}
                   </div>
 
                   <div className="relative w-full aspect-[16/9] max-h-56 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center border border-border/50">
                     {/* Blurred background ambience */}
                     <img
-                      src={formData.poster_url.trim().startsWith('http') ? formData.poster_url.trim() : `https://${formData.poster_url.trim()}`}
+                      src={formData.poster_url}
                       alt=""
                       aria-hidden="true"
                       className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
@@ -393,7 +556,7 @@ export const HostEventPage = () => {
                     />
                     {/* Main contained image */}
                     <img
-                      src={formData.poster_url.trim().startsWith('http') ? formData.poster_url.trim() : `https://${formData.poster_url.trim()}`}
+                      src={formData.poster_url}
                       alt="Event Banner Preview"
                       referrerPolicy="no-referrer"
                       className="relative z-10 max-h-full max-w-full object-contain"
@@ -401,10 +564,23 @@ export const HostEventPage = () => {
                       onError={() => setPosterPreviewStatus('error')}
                     />
                     {posterPreviewStatus === 'error' && (
-                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/90 p-4 text-center text-xs text-muted-foreground space-y-1">
-                        <AlertCircle className="w-6 h-6 text-destructive mb-1" />
-                        <p className="font-semibold text-foreground">Could not preview image</p>
-                        <p className="text-[11px] max-w-xs">Make sure the URL points directly to an image file and is publicly accessible.</p>
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/90 p-4 text-center text-xs space-y-2">
+                        <AlertCircle className="w-6 h-6 text-amber-400" />
+                        <div>
+                          <p className="font-semibold text-foreground">Direct Preview Not Supported by This Link</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 max-w-sm">
+                            The link might be a webpage instead of an image, or blocks hotlinking. You can click <strong>Upload from device</strong> above to select the image file directly!
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="h-7 text-xs border-purple-500/30 text-purple-300 gap-1 mt-1"
+                        >
+                          <Upload className="w-3 h-3" /> Upload file instead
+                        </Button>
                       </div>
                     )}
                   </div>

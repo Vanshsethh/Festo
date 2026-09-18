@@ -20,6 +20,7 @@ export const register = async (req, res, next) => {
       success: true,
       data: {
         user,
+        token,
       },
     });
   } catch (error) {
@@ -37,6 +38,7 @@ export const login = async (req, res, next) => {
       success: true,
       data: {
         user,
+        token,
       },
     });
   } catch (error) {
