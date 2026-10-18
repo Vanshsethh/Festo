@@ -1,95 +1,146 @@
-# Festo — College Event Platform
+# Festo — College Event Ticketing & Gate Validation System
 
-Festo is a modern web platform for college events. It helps students discover campus fests, register for tickets, and allows organizers to publish events with real-time capacity control and QR code passes.
+Festo is an end-to-end college event ticketing and validation platform. It enables students to discover campus events, reserve capacity-controlled tickets, receive unique QR passes, and enter venues through secure organizer-operated gate validation.
 
----
+Its core promise is simple: every confirmed reservation becomes a traceable digital pass, and every pass is validated once against the correct event at the gate. Festo combines transactional booking, background QR-ticket generation, a digital ticket wallet, and real-time check-in records so colleges can run events without overselling seats or accepting duplicate passes.
 
-## Architecture Flow
-
-Festo uses a simple and reliable architecture: the frontend talks to a backend API, which securely stores data in PostgreSQL and uses a background worker for generating QR tickets.
+## Architecture
 
 ```mermaid
-flowchart TD
-    subgraph Frontend [Client]
-        A["React App (Vite + Tailwind)"]
-    end
-
-    subgraph Backend [Backend API]
-        B["Express API (Node.js)"]
-    end
-
-    subgraph Database [Database]
-        C[("PostgreSQL\n(Main Database)")]
-    end
-
-    subgraph Queue [Background Queue]
-        D[("Redis\n(BullMQ)")]
-        E["Worker Process\n(QR Generator)"]
-    end
-
-    A -->|"API Requests"| B
-    B -->|"Store & Read Data"| C
-    B -->|"Queue Ticket Task"| D
-    D -->|"Process Task"| E
-    E -->|"Save QR Pass"| C
+flowchart LR
+  Browser[React + Vite\nTailwind CSS] -->|REST + HTTP-only JWT cookie| API[Express API\nTypeScript]
+  API -->|parameterized SQL\ntransactions| DB[(PostgreSQL\nsource of truth)]
+  API -->|after commit| Queue[(Redis + BullMQ)]
+  Queue --> Worker[Worker\npass, notification & reminder jobs]
+  Worker --> DB
+  Scanner[Organizer check-in page] -->|authenticated scan| API
 ```
 
-### How It Works
+The backend is a modular monolith: routes → controllers → services → repositories. PostgreSQL is authoritative; Redis and workers perform asynchronous work and never decide whether a registration exists.
 
-1. **Browse & Select**: Students explore live college events and choose how many tickets they want.
-2. **Safe Booking (No Overselling)**: The backend checks available seats inside a database transaction to make sure two people cannot book the last seat at the same time.
-3. **Instant Confirmation**: Once registered, the user gets instant confirmation.
-4. **Background QR Generation**: A background worker generates the unique QR pass and adds it to the user's ticket wallet.
+## Ticket reservation, pass generation, and validation
 
----
+```mermaid
+sequenceDiagram
+  participant Student
+  participant API
+  participant DB as PostgreSQL
+  participant Q as BullMQ / Redis
+  participant W as Worker
+  participant Organizer
 
-## Tech Stack
+  Student->>API: Reserve 1–10 tickets
+  API->>DB: Lock event row and validate capacity, dates, and duplicate booking
+  API->>DB: Create confirmed registration + increment count (one transaction)
+  API-->>Student: Registration confirmed
+  API->>Q: Enqueue pass generation after commit
+  Q->>W: Generate tickets
+  W->>DB: Save idempotent ticket codes and QR tokens
+  Organizer->>API: Scan QR token at /organizer/checkin
+  API->>DB: Lock pass and verify organizer owns the event
+  API-->>Organizer: VALID, INVALID_PASS, ALREADY_CHECKED_IN, or UNAUTHORIZED
+  API->>DB: Record check-in and mark registration attended
+```
 
-| Layer | Technology |
+### Reservation guarantees
+
+- Capacity is protected with a PostgreSQL transaction and row lock, preventing overselling.
+- A registration is committed before a job is queued; a Redis outage does not undo a valid reservation.
+- Ticket creation is idempotent, so retries and duplicate jobs do not create duplicate passes.
+- The ticket wallet can reconcile outstanding tickets if a worker was unavailable.
+- QR validation locks the pass/check-in path, preventing a ticket being accepted twice.
+- The scanner endpoint requires an authenticated `ORGANIZER` and verifies that the scanner created the event.
+
+## Features
+
+- Public event and college discovery, search, categories, saved events, and event details.
+- Authentication, password reset, HTTP-only JWT session cookies, role protection, and rate limiting.
+- Event hosting, media uploads, capacity management, registrations, tickets, and attendee dashboards.
+- Organizer QR scanner at `/organizer/checkin`.
+- BullMQ jobs for pass generation, notifications, and event reminders.
+- PostgreSQL migrations through `node-pg-migrate`.
+
+## Stack
+
+| Area | Technology |
 | --- | --- |
-| **Frontend** | React, Vite, Tailwind CSS |
-| **Backend** | Node.js, Express |
-| **Database** | PostgreSQL |
-| **Background Jobs** | Redis, BullMQ |
-| **Containerization** | Docker Compose |
+| Frontend | React 18, Vite 6, TypeScript, React Router, TanStack Query, Tailwind CSS 4 |
+| API | Node.js, Express, TypeScript, Zod, REST |
+| Data | PostgreSQL 16, `pg`, parameterized SQL |
+| Jobs | Redis 7, BullMQ |
+| Security | Argon2 password hashes, JWT HTTP-only cookies, CORS, rate limits, validation |
+| Media and email | Cloudinary and Resend |
+| Local runtime | Docker Compose |
 
----
+## Repository layout
 
-## Key Features
+```text
+festo-frontend/              React/Vite application
+  src/pages/                  Public, auth, student, college, and admin screens
+  src/components/             UI, event, pass, check-in, and common components
+  src/services/               Typed API clients
 
-- **Event Discovery**: Explore upcoming cultural fests, hackathons, and workshops by category or college.
-- **Host an Event**: College organizers can create events, upload banners, and set seat capacity.
-- **Safe Ticket Booking**: Book 1 to 10 tickets per event with guaranteed capacity checks.
-- **QR Code Passes**: Digital tickets with scannable QR codes for fast venue entry.
-- **Student Dashboard**: Simple wallet to view registrations and active passes.
+festo-backend/               Express API and background workers
+  src/modules/                Feature modules: routes, controllers, services, repos, schemas
+  src/workers/                BullMQ queues and processors
+  src/db/                     PostgreSQL pool and transaction helper
+  migrations/                 Database migration history (CommonJS for node-pg-migrate)
 
----
-
-## Quick Start (Run Everything with One Command)
-
-Make sure Docker is running, then from the root directory run:
-
-```bash
-docker compose up
-```
-*(or run `docker compose up -d` to run in the background)*
-
-This automatically starts all 5 services:
-- **Frontend**: `http://localhost:5173` (React Vite with hot-reloading)
-- **API**: `http://localhost:5001`
-- **PostgreSQL**: `localhost:5432`
-- **Redis**: `localhost:6379`
-- **BullMQ Worker**: ticket and QR code generator
-
-To stop everything:
-```bash
-docker compose down
+docker-compose.yml            Local frontend, API, worker, PostgreSQL, and Redis
 ```
 
----
+Compiled backend files in `festo-backend/build/` are generated JavaScript by design. Database migration files remain `.cjs` because `node-pg-migrate` loads them at runtime.
 
-## Security
+## Run locally
 
-- Environment files (`.env`) and private keys are strictly kept local and never committed to GitHub.
-- Passwords are securely hashed.
-- Protected routes require user authentication.
+### Full stack with Docker
+
+1. Create local environment files from the supplied examples where applicable. Never commit them.
+2. Set a strong `JWT_SECRET` outside the repository for any non-local deployment.
+3. From the repository root:
+
+```bash
+docker compose up --build
+```
+
+| Service | Address |
+| --- | --- |
+| Frontend | http://localhost:5173 |
+| API | http://localhost:5002 |
+| API health | http://localhost:5002/health |
+| QR scanner | http://localhost:5173/organizer/checkin |
+| PostgreSQL | `localhost:5432` |
+| Redis | `localhost:6379` |
+
+Stop the stack with `docker compose down`.
+
+### Run frontend and backend separately
+
+```bash
+# terminal 1
+cd festo-backend && npm install && npm run dev:api
+
+# terminal 2
+cd festo-backend && npm run dev:worker
+
+# terminal 3
+cd festo-frontend && npm install && npm run dev
+```
+
+Run migrations with `cd festo-backend && npm run migrate:up`.
+
+## Quality checks
+
+```bash
+cd festo-frontend && npm run typecheck && npm run build
+cd ../festo-backend && npm run typecheck && npm run build
+```
+
+Both applications are migrated to TypeScript. Configuration and migration files stay JavaScript/CommonJS only where their toolchain requires it.
+
+## Security notes
+
+- `.env`, cookie captures, logs, PID files, generated builds, and dependencies are ignored by Git.
+- Do not use the development Docker Compose JWT fallback outside local development.
+- Use HTTPS and secure production cookie settings when deploying.
+- Keep PostgreSQL and Redis unavailable from the public internet unless protected by your infrastructure.
