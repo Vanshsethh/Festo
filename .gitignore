@@ -1,29 +1,14 @@
-# Documentation kept local only
-CLAUDE.md
-.claude/
-festo-backend/docker-compose.yml.bak
+# Generated dependencies and build artifacts
+**/node_modules/
+festo-backend/build/
+festo-frontend/dist/
 
-# Dependencies and builds
-node_modules/
-dist/
-coverage/
-
-# Environment files: examples are safe to commit
-.env
-.env.*
-!.env.example
-
-# Sessions, credentials, and private material
-*.cookie
-cookies.txt
-*.pem
-*.key
-*.p12
-*.pfx
-*.crt
-secrets/
-
-# Logs and local state
-*.log
-*.pid
+# Local environment configuration and OS files
+**/.env
+**/*.local
+**/*.cookie
+**/cookies.txt
+**/*.log
+**/*.pid
+**/*.bak
 .DS_Store

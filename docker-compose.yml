@@ -1,0 +1,100 @@
+name: festo-backend
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: festo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: festo
+    ports:
+      - "5432:5432"
+    volumes:
+      - festo_pgdata:/var/lib/postgresql/data
+      - ./festo-backend/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d festo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: festo_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - festo_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./festo-backend
+      dockerfile: Dockerfile
+    container_name: festo_api
+    restart: unless-stopped
+    command: sh -c "npm run migrate:up && npm run start:api"
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./festo-backend/src:/app/src
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/festo
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: http://localhost:5173
+      JWT_SECRET: ${JWT_SECRET:-festo_super_secret_jwt_key_at_least_32_chars_long_12345}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./festo-backend
+      dockerfile: Dockerfile
+    container_name: festo_worker
+    restart: unless-stopped
+    command: npm run start:worker
+    volumes:
+      - ./festo-backend/src:/app/src
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/festo
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-festo_super_secret_jwt_key_at_least_32_chars_long_12345}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./festo-frontend
+      dockerfile: Dockerfile
+    container_name: festo_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5002
+    volumes:
+      - ./festo-frontend/src:/app/src
+      - ./festo-frontend/public:/app/public
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  festo_pgdata:
+  festo_redisdata:

@@ -1,130 +1,206 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
+/* Festo's product language: quiet silver surfaces with a restrained lavender signal. */
 @layer base {
   :root {
-    --background: 270 18% 4%;
-    --foreground: 210 40% 98%;
-
-    --card: 264 20% 8%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 264 20% 8%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 320 91% 62%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 266 22% 13%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 266 20% 14%;
-    --muted-foreground: 215 20% 72%;
-
-    --accent: 290 35% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 280 22% 20%;
-    --input: 280 22% 20%;
-    --ring: 320 91% 62%;
-
-    --radius: 0.75rem;
+    --background: 225 14% 92%; --foreground: 234 11% 11%;
+    --card: 0 0% 100%; --card-foreground: 234 11% 11%;
+    --popover: 0 0% 100%; --popover-foreground: 234 11% 11%;
+    --primary: 247 19% 53%; --primary-foreground: 0 0% 100%;
+    --secondary: 240 20% 95%; --secondary-foreground: 234 11% 11%;
+    --muted: 240 18% 96%; --muted-foreground: 232 9% 43%;
+    --accent: 250 43% 95%; --accent-foreground: 247 19% 38%;
+    --destructive: 351 37% 48%; --destructive-foreground: 0 0% 100%;
+    --border: 232 16% 88%; --input: 232 16% 88%; --ring: 247 19% 53%;
+    --radius: 1rem;
   }
-}
-
-body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}
-
-.festo-hero {
-  min-height: 430px;
-  container-type: inline-size;
-  background:
-    radial-gradient(circle at 14% 90%, rgba(190, 24, 93, 0.18), transparent 34%),
-    radial-gradient(circle at 85% 10%, rgba(139, 92, 246, 0.18), transparent 31%),
-    linear-gradient(125deg, #0d0911 0%, #100919 48%, #08090f 100%);
-}
-
-.festo-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.25;
-  background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(to right, black, transparent 70%);
-}
-
-.festo-hero-wordmark {
-  width: 100%;
-  white-space: nowrap;
-  font-family: 'Apple Chancery', 'URW Chancery L', 'Brush Script MT', cursive;
-  font-size: clamp(5rem, 15.5cqi, 14rem);
-  font-style: normal;
-  font-weight: 600;
-  letter-spacing: -0.07em;
-  background: linear-gradient(105deg, #fff7fb 3%, #fbcfe8 31%, #e879f9 58%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 10px 28px rgba(217, 70, 239, 0.24));
-}
-
-@media (max-width: 640px) {
-  .festo-hero-wordmark {
-    font-size: clamp(4.4rem, 17vw, 6.5rem);
-    letter-spacing: -0.09em;
+  .dark {
+    --background: 240 4% 7%; --foreground: 0 0% 100%;
+    --card: 0 0% 100%; --card-foreground: 234 11% 11%;
+    --popover: 0 0% 100%; --popover-foreground: 234 11% 11%;
+    --secondary: 240 20% 95%; --secondary-foreground: 234 11% 11%;
+    --muted: 240 18% 96%; --muted-foreground: 232 9% 43%;
+    --accent: 250 43% 95%; --accent-foreground: 247 19% 38%;
+    --border: 232 16% 88%; --input: 232 16% 88%;
   }
+  * { @apply border-border outline-ring/50; }
+  html { min-width: 320px; background: #e9eaee; }
+  body { margin: 0; min-width: 320px; font-family: 'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #191a20; background: radial-gradient(circle at 5% -10%, rgba(220, 217, 240, .9), transparent 27%), radial-gradient(circle at 90% 0%, rgba(255, 255, 255, .9), transparent 31%), #e9eaee; }
+  button, input, select, textarea { font: inherit; }
+  ::selection { color: #191a20; background: #dcd9f0; }
 }
 
-@keyframes glowing-border-spin {
-  to { transform: rotate(1turn); }
+@layer components {
+  .glass-panel, .glass-card { background: rgba(255, 255, 255, .76); border: 1px solid rgba(217, 218, 227, .92); box-shadow: 0 16px 42px rgba(38, 39, 52, .08), inset 0 1px rgba(255,255,255,.9); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+  .glass-control { color: #656775; background: rgba(255, 255, 255, .72); border: 1px solid #d9dae3; box-shadow: inset 0 1px rgba(255,255,255,.9); backdrop-filter: blur(12px); }
+  .surface-panel { background: rgba(247, 247, 250, .9); border: 1px solid #d9dae3; border-radius: 1.5rem; box-shadow: 0 14px 34px rgba(38, 39, 52, .07); }
+  .skeleton { position: relative; overflow: hidden; background: #f0f0f5; }
+  .skeleton::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent); animation: festo-shimmer 1.7s infinite; }
 }
 
-.glowing-effect {
-  position: absolute;
-  z-index: 0;
-  inset: -1px;
-  overflow: hidden;
-  border-radius: inherit;
-  pointer-events: none;
-}
+@keyframes festo-shimmer { 100% { transform: translateX(100%); } }
 
-.glowing-effect::before {
-  content: '';
-  position: absolute;
-  inset: -75%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 130deg,
-    rgba(192, 132, 252, 0.2) 175deg,
-    rgba(232, 121, 249, 0.95) 210deg,
-    rgba(129, 140, 248, 0.9) 245deg,
-    transparent 290deg,
-    transparent 360deg
-  );
-  animation: glowing-border-spin 7s linear infinite;
+/* Compatibility bridge for legacy route utility strings. It lets every existing page
+   adopt the design system while preserving API and interaction code. */
+[class*="bg-[#0"], [class*="bg-[#1"] { background-color: #f7f7fa !important; }
+[class*="bg-slate-"], [class*="bg-zinc-"] { background-color: #f0f0f5 !important; }
+[class*="border-white/"] { border-color: #d9dae3 !important; }
+[class*="bg-black/"] { background-color: rgba(240, 240, 245, .88) !important; }
+[class*="bg-white/"] { background-color: rgba(255, 255, 255, .78) !important; }
+[class*="text-slate-"], [class*="text-zinc-"] { color: #656775 !important; }
+.text-white { color: #191a20 !important; }
+[class*="text-pink-"], [class*="text-fuchsia-"], [class*="text-purple-"], [class*="text-violet-"], .text-primary { color: #191a20 !important; }
+[class*="bg-pink-"], [class*="bg-fuchsia-"], [class*="bg-purple-"], [class*="bg-violet-"] { background-color: #dcd9f0 !important; }
+[class*="border-pink-"], [class*="border-fuchsia-"], [class*="border-purple-"], [class*="border-violet-"] { border-color: #c9c5e1 !important; }
+[class*="shadow-pink-"], [class*="shadow-fuchsia-"], [class*="shadow-purple-"], [class*="shadow-violet-"] { --tw-shadow-color: rgba(119, 112, 159, .16) !important; }
+.bg-pink-600, .bg-fuchsia-600, .bg-purple-600, .bg-violet-600, .bg-primary { background-color: #77709f !important; }
+.bg-pink-600 *, .bg-fuchsia-600 *, .bg-purple-600 *, .bg-violet-600 *, .bg-primary *, .bg-pink-600, .bg-fuchsia-600, .bg-purple-600, .bg-violet-600, .bg-primary { color: #fff !important; }
+.hover\:bg-pink-500:hover, .hover\:bg-fuchsia-500:hover, .hover\:bg-purple-500:hover, .hover\:bg-violet-500:hover { background-color: #645d88 !important; }
+.festo-app-ripple { display: none; }
+.festo-hero { min-height: 360px; background: linear-gradient(125deg, rgba(255,255,255,.92), rgba(236,234,248,.9)); box-shadow: 0 20px 48px rgba(38,39,52,.09); }
+.festo-hero::before { content: ''; position: absolute; inset: 0; opacity: .46; background-image: linear-gradient(rgba(119,112,159,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(119,112,159,.07) 1px, transparent 1px); background-size: 38px 38px; mask-image: linear-gradient(to right, #000, transparent 80%); }
+.festo-hero-wordmark { color: #191a20; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(4rem, 12vw, 10rem); font-weight: 700; letter-spacing: -.09em; text-shadow: 0 8px 24px rgba(119,112,159,.12); }
+.dark body { color: #fff; background: radial-gradient(circle at 4% -12%, rgba(119,112,159,.24), transparent 26%), #111216; }
+.dark .festo-hero { background: radial-gradient(ellipse at 78% 22%, rgba(220,217,240,.22), transparent 34%), radial-gradient(ellipse at 15% 100%, rgba(119,112,159,.25), transparent 40%), linear-gradient(125deg, #202128 0%, #15161c 48%, #0d0e12 100%); border-color: rgba(255,255,255,.2) !important; box-shadow: 0 22px 60px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.09); }
+.dark .festo-hero::before { opacity: .26; background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px); }
+.dark .surface-panel, .dark .glass-panel, .dark .glass-card, .dark .glass-control { color: #191a20; }
+.dark .festo-hero-wordmark { color: #fff; text-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.dark .festo-hero :is(p, svg, span) { color: #fff !important; }
+.dark aside { background: linear-gradient(165deg, rgba(37,38,46,.96), rgba(16,17,22,.98)) !important; border-color: rgba(255,255,255,.14) !important; box-shadow: 18px 0 42px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.08); }
+.dark aside :is(a, button, p, svg) { color: #fff !important; }
+.dark aside nav a[aria-current='page'] { background: #f1f1f5 !important; border-color: rgba(255,255,255,.7) !important; color: #191a20 !important; }
+.dark aside nav a[aria-current='page'] :is(span, svg) { color: #191a20 !important; }
+.dark aside nav a:hover { color: #191a20 !important; }
+.dark aside nav a:hover :is(span, svg) { color: #191a20 !important; }
+/* Any selected control that uses a bright surface must flip its foreground to ink.
+   This prevents labels/icons disappearing after click or keyboard selection. */
+.dark :is([aria-current='page'], [aria-pressed='true'], [data-state='active']) :is(span, p, svg, .text-white, .text-muted-foreground) { color: #191a20 !important; }
+.dark :is(button, a)[class*='bg-white'] :is(span, p, svg, .text-white, .text-muted-foreground), .dark :is(button, a)[class*='bg-slate-'] :is(span, p, svg, .text-white, .text-muted-foreground) { color: #191a20 !important; }
+.dark header { background: linear-gradient(90deg, rgba(36,37,45,.97), rgba(17,18,23,.98)) !important; border-color: rgba(255,255,255,.14) !important; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.dark header :is(button, a:not(.glass-control), svg) { color: #fff !important; }
+.dark header .glass-control { color: #fff !important; background: rgba(255,255,255,.1) !important; border-color: rgba(255,255,255,.18) !important; box-shadow: inset 0 1px rgba(255,255,255,.1); }
+.dark header .glass-control svg { color: #fff !important; }
+.dark header .festo-header-control, .dark header .festo-header-control svg { color: #fff !important; }
+.dark header .festo-header-control:hover { background: rgba(255,255,255,.12) !important; color: #fff !important; }
+.dark header .festo-header-control:hover svg { color: #fff !important; }
+.dark header button.festo-header-control, .dark header button.festo-header-control :is(span, svg) { color: #fff !important; opacity: 1 !important; visibility: visible !important; }
+.dark .festo-brand span:first-child { color: #fff !important; }
+.dark .festo-brand span:last-child { background: #a39bc9 !important; }
+.dark .festo-discovery-panel { background: radial-gradient(ellipse at 90% 5%, rgba(220,217,240,.16), transparent 40%), linear-gradient(135deg, #24252d, #111217 72%) !important; border-color: rgba(255,255,255,.16) !important; box-shadow: 0 22px 52px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.08); }
+.dark .festo-discovery-panel :is(h2, p, span, svg) { color: #fff !important; }
+.dark .festo-discovery-panel input { background: rgba(255,255,255,.1) !important; border-color: rgba(255,255,255,.18) !important; color: #fff !important; }
+.dark .festo-discovery-panel input::placeholder { color: rgba(255,255,255,.62) !important; }
+.dark .festo-discovery-panel :is(h1, h2, h3, p) { color: #fff !important; }
+.dark .festo-poster-fallback :is(p, span, svg, h1, h2, h3) { color: #fff !important; opacity: 1 !important; }
+.dark .bg-background { background-color: #111216 !important; }
+.dark .text-foreground { color: #fff; }
+.dark .text-white { color: #fff !important; }
+/* On light tiles, compact labels and utility icons use true ink—not washed-out
+   gray—so navigation, filters and small controls stay premium and readable. */
+:is(.glass-panel, .glass-card, .surface-panel, .bg-card, [class*="bg-[#"], [class*="bg-white/"], [class*="bg-black/"], [class*="bg-slate-"], [class*="bg-zinc-"]) :is(.text-muted-foreground, [class*="text-slate-"], [class*="text-zinc-"]) { color: #191a20 !important; }
+/* Dark mode intentionally uses a black canvas with bright, editorial cards. Never
+   allow pale utility text to leak into those cards: it weakens small metadata most. */
+.dark :is(.glass-panel, .glass-card, .surface-panel, .bg-card, [class*="bg-[#"], [class*="bg-white/"], [class*="bg-black/"], [class*="bg-slate-"], [class*="bg-zinc-"]) { color: #191a20; }
+.dark :is(.glass-panel, .glass-card, .surface-panel, .bg-card, [class*="bg-[#"], [class*="bg-white/"], [class*="bg-black/"], [class*="bg-slate-"], [class*="bg-zinc-"]) :is(.text-foreground, .text-white, .text-muted-foreground, [class*="text-slate-"], [class*="text-zinc-"], [class*="text-pink-"], [class*="text-fuchsia-"], [class*="text-purple-"], [class*="text-violet-"]) { color: #191a20 !important; }
+/* Buttons remain the deliberate exception: a solid premium action always carries
+   white copy, regardless of the surrounding card or mode. */
+.dark :is(.bg-primary, .bg-pink-600, .bg-fuchsia-600, .bg-purple-600, .bg-violet-600, .bg-destructive, .bg-emerald-600) :is(svg, span), .dark :is(.bg-primary, .bg-pink-600, .bg-fuchsia-600, .bg-purple-600, .bg-violet-600, .bg-destructive, .bg-emerald-600) { color: #fff !important; }
+.festo-poster-fallback { color: #fff; background: radial-gradient(circle at 75% 15%, rgba(119,112,159,.5), transparent 28%), linear-gradient(135deg, #292536, #0e0e13 72%); }
+.festo-poster-fallback * { color: #fff !important; }
+/* Override the legacy bright-surface matcher above for the intentionally dark header. */
+.dark header button.festo-header-control, .dark header button.festo-header-control :is(svg, span) { color: #fff !important; opacity: 1 !important; visibility: visible !important; }
+/* The discovery panel is a dark surface even though it retains legacy bg utility classes. */
+.dark .festo-discovery-panel :is(h1, h2, h3, p) { color: #fff !important; opacity: 1 !important; }
+html.dark #root .festo-discovery-panel :is(h1, h2, h3, p) { color: #fff !important; opacity: 1 !important; }
+/* Generated poster covers and their badges sit on dark artwork, so always use a
+   deliberately light foreground, independent of global light-card rules. */
+.dark .festo-poster-fallback, .dark .festo-poster-fallback * { color: #fff !important; opacity: 1 !important; }
+.dark .festo-event-category, .dark .festo-event-category *, .dark .festo-event-meta-badge, .dark .festo-event-meta-badge * { color: #fff !important; opacity: 1 !important; }
+/* Generated event artwork is always dark. The root-scoped form deliberately wins
+   over legacy utility classes, so newly hosted posterless events inherit this too. */
+html.dark #root .festo-poster-fallback, html.dark #root .festo-poster-fallback * { color: #fff !important; opacity: 1 !important; visibility: visible !important; }
+html.dark #root .festo-event-category, html.dark #root .festo-event-category *, html.dark #root .festo-event-meta-badge, html.dark #root .festo-event-meta-badge * { color: #fff !important; opacity: 1 !important; }
+html.dark #root header .festo-campus-label { color: #fff !important; opacity: 1 !important; visibility: visible !important; }
+html.dark #root header .festo-notification-icon { color: #fff !important; opacity: 1 !important; visibility: visible !important; }
+/* The Explore search field uses a light surface in both themes. Keep entered
+   text and its caret ink-dark even when legacy dark-mode utility rules apply. */
+#root .festo-events-search {
+  color: #191a20 !important;
+  caret-color: #191a20 !important;
 }
-
-.glowing-effect::after {
-  content: '';
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: hsl(var(--card));
+#root .festo-events-search::placeholder { color: #71809b !important; }
+/* Keep the notification menu legible and anchored to the viewport, rather than
+   inheriting the legacy card styles used by the rest of the dark interface. */
+#root .festo-notifications-panel {
+  background: #ffffff !important;
+  border-color: #d9dae3 !important;
+  color: #191a20 !important;
 }
-
-.glowing-effect--blue::before {
-  background: conic-gradient(from 0deg, transparent 0deg, transparent 135deg, rgba(34, 211, 238, 0.25) 180deg, rgba(96, 165, 250, 0.95) 225deg, rgba(129, 140, 248, 0.85) 260deg, transparent 305deg, transparent 360deg);
+#root .festo-notifications-panel :is(p, div) { color: #191a20 !important; }
+.dark #root .festo-notifications-panel {
+  background: #202128 !important;
+  border-color: rgba(255, 255, 255, .2) !important;
+  color: #ffffff !important;
 }
+.dark #root .festo-notifications-panel :is(p, div) { color: #ffffff !important; }
+.dark #root .festo-notifications-panel .text-muted-foreground { color: rgba(255, 255, 255, .68) !important; }
+/* Dedicated header controls stay crisp against the dark navigation bar instead
+   of inheriting the pale surface utilities used elsewhere in the app. */
+#root header .festo-campus-control,
+#root header .festo-bell-control {
+  background: #25262e !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 4px 12px rgba(0, 0, 0, .16);
+  color: #ffffff !important;
+}
+#root header .festo-campus-control:hover,
+#root header .festo-bell-control:hover {
+  background: #343540 !important;
+  border-color: rgba(196, 181, 253, .68) !important;
+}
+#root header .festo-campus-control :is(span, svg),
+#root header .festo-bell-control svg { color: #ffffff !important; }
+#root header .festo-campus-control .festo-campus-label:first-child { color: #c4b5fd !important; }
+#root header .festo-notification-badge {
+  background: #a78bfa !important;
+  border: 2px solid #25262e !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .42);
+}
+html, body, header, aside, main, footer, [class*="bg-[#"], .glass-panel, .glass-card, .surface-panel { transition: background-color .28s ease, color .28s ease, border-color .28s ease; }
+.ticket-notch-left, .ticket-notch-right { background: #e9eaee; border-color: #d9dae3; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
-@media (prefers-reduced-motion: reduce) {
-  .glowing-effect::before { animation: none; }
+/* College directory search and college database selector */
+.dark .festo-college-filter {
+  background: radial-gradient(ellipse at 85% 15%, rgba(168, 85, 247, 0.12), transparent 45%), linear-gradient(135deg, #1c1d25, #121318 80%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.08);
+}
+.dark .festo-college-filter input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+.dark .festo-college-filter input:focus {
+  border-color: rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
+}
+.dark .festo-college-filter input::placeholder {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+.dark .festo-college-filter select {
+  background-color: #171822 !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+.dark .festo-college-filter select option {
+  background-color: #171822 !important;
+  color: #ffffff !important;
+}
+.dark .festo-college-filter :is(p, span:not(.badge-text), label, svg) {
+  color: #ffffff !important;
+}
+.dark .festo-college-filter .text-purple-400 {
+  color: #c084fc !important;
 }

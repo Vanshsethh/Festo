@@ -65,28 +65,26 @@ flowchart TD
 
 ---
 
-## Quick Start (Run Locally)
+## Quick Start (Run Everything with One Command)
 
-### 1. Start Backend Services
-Make sure you have Docker running, then run:
-
-```bash
-cd festo-backend
-docker compose up -d --build postgres redis api worker
-docker compose exec -T api npm run migrate:up
-docker compose exec -T api npm run seed
-```
-The API will run at `http://localhost:5001`.
-
-### 2. Start Frontend
-In a new terminal window:
+Make sure Docker is running, then from the root directory run:
 
 ```bash
-cd festo-frontend
-npm install
-npm run dev
+docker compose up
 ```
-Open `http://localhost:5173` in your browser.
+*(or run `docker compose up -d` to run in the background)*
+
+This automatically starts all 5 services:
+- **Frontend**: `http://localhost:5173` (React Vite with hot-reloading)
+- **API**: `http://localhost:5001`
+- **PostgreSQL**: `localhost:5432`
+- **Redis**: `localhost:6379`
+- **BullMQ Worker**: ticket and QR code generator
+
+To stop everything:
+```bash
+docker compose down
+```
 
 ---
 

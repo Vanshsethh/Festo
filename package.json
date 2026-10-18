@@ -1,0 +1,14 @@
+{
+  "name": "festo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Festo - College Event Platform",
+  "scripts": {
+    "start": "docker compose up",
+    "dev": "docker compose up",
+    "build": "docker compose build",
+    "down": "docker compose down",
+    "seed": "docker compose exec -T api npm run seed",
+    "migrate": "docker compose exec -T api npm run migrate:up"
+  }
+}
