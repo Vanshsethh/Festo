@@ -86,7 +86,7 @@ export const StudentDashboardPage = () => {
           <Button asChild variant="outline" size="sm">
             <Link to="/explore">Explore Events</Link>
           </Button>
-          <Button asChild size="sm" className="bg-gradient-to-r from-purple-600 to-indigo-600 gap-1.5">
+          <Button asChild variant="outline" size="sm" className="border-violet-300/80 bg-accent text-foreground shadow-sm hover:bg-secondary gap-1.5">
             <Link to="/host">
               <PlusCircle className="w-4 h-4" />
               Host an Event
