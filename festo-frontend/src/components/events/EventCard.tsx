@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Building2, Bookmark, Share2, Sparkles, Check } from 'lucide-react';
 import { AvailabilityBar } from './AvailabilityBar.jsx';
 import { useToast } from '../common/Toast.jsx';
+import type { EventRecord } from '../../types/api.js';
 
 // Category color palettes for subtle distinction
 const categoryStyles = {
@@ -17,7 +18,7 @@ const categoryStyles = {
   GAMING: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
 };
 
-const formatEventDate = (dateString) => {
+const formatEventDate = (dateString?: string) => {
   if (!dateString) return 'Date TBA';
   const d = new Date(dateString);
   return d.toLocaleDateString(undefined, {
@@ -27,13 +28,19 @@ const formatEventDate = (dateString) => {
   });
 };
 
-const formatEventTime = (dateString) => {
+const formatEventTime = (dateString?: string) => {
   if (!dateString) return '';
   const d = new Date(dateString);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-export const EventCard = ({ event, className = '', isFeatured = false }) => {
+interface EventCardProps {
+  event: EventRecord;
+  className?: string;
+  isFeatured?: boolean;
+}
+
+export const EventCard = ({ event, className = '', isFeatured = false }: EventCardProps) => {
   const [imgError, setImgError] = useState(false);
   const [isSaved, setIsSaved] = useState(() => {
     try {
@@ -46,16 +53,16 @@ export const EventCard = ({ event, className = '', isFeatured = false }) => {
 
   const toast = useToast();
   const hasPoster = Boolean(event.poster_url?.trim()) && !imgError;
-  const categoryStyle = categoryStyles[event.category] || 'bg-slate-800 text-slate-300 border-slate-700';
+  const categoryStyle = (event.category && categoryStyles[event.category as keyof typeof categoryStyles]) || 'bg-slate-800 text-slate-300 border-slate-700';
 
-  const toggleSave = (e) => {
+  const toggleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       const saved = JSON.parse(localStorage.getItem('festo_saved_events') || '[]');
       let updated;
       if (isSaved) {
-        updated = saved.filter((id) => id !== event.id);
+        updated = saved.filter((id: string) => id !== event.id);
         setIsSaved(false);
         toast.info(`Removed "${event.title}" from saved`);
       } else {
@@ -69,7 +76,7 @@ export const EventCard = ({ event, className = '', isFeatured = false }) => {
     }
   };
 
-  const handleShare = (e) => {
+  const handleShare = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const url = `${window.location.origin}/events/${event.slug}`;
@@ -79,7 +86,7 @@ export const EventCard = ({ event, className = '', isFeatured = false }) => {
     }
   };
 
-  const isSoldOut = event.capacity && event.registered_count >= event.capacity;
+  const isSoldOut = Boolean(event.capacity && (event.registered_count ?? 0) >= event.capacity);
 
   return (
     <div
@@ -90,13 +97,13 @@ export const EventCard = ({ event, className = '', isFeatured = false }) => {
         {hasPoster ? (
           <>
             <img
-              src={event.poster_url}
+              src={event.poster_url ?? undefined}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover blur-xl opacity-40 scale-110 group-hover:scale-125 transition-transform duration-500"
             />
             <img
-              src={event.poster_url}
+              src={event.poster_url ?? undefined}
               alt={event.title}
               onError={() => setImgError(true)}
               className="relative z-10 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"

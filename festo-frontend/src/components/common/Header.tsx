@@ -8,7 +8,10 @@ import { eventsService } from '../../services/events.service.js';
 import { collegesService } from '../../services/colleges.service.js';
 import { notificationsService } from '../../services/notifications.service.js';
 
-export const Header = ({ onMenuToggle }) => {
+type SearchItem = { id: string; title?: string; slug?: string; college_name?: string; name?: string; location?: string };
+type Notification = { id: string; type: string; created_at: string; payload?: { registration_id?: string; event_title?: string; quantity?: number } };
+
+export const Header = ({ onMenuToggle }: { onMenuToggle: () => void }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const searchRef = useRef(null);
@@ -92,19 +95,19 @@ export const Header = ({ onMenuToggle }) => {
   const notifications = [
     ...apiNotifications,
     ...localNotifications.filter((localNotification) => !apiNotifications.some(
-      (apiNotification) => apiNotification.payload?.registration_id
+      (apiNotification: Notification) => apiNotification.payload?.registration_id
         && apiNotification.payload.registration_id === localNotification.payload?.registration_id
     )),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const submitSearch = (event) => {
+  const submitSearch = (event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (!normalizedQuery) return;
     setSearchOpen(false);
     navigate(`/explore?q=${encodeURIComponent(normalizedQuery)}`);
   };
 
-  const formatNotification = (notification) => {
+  const formatNotification = (notification: Notification) => {
     const eventTitle = notification.payload?.event_title || 'your event';
     if (notification.type === 'REGISTRATION_CONFIRMED') {
       const quantity = notification.payload?.quantity || 1;
@@ -134,8 +137,8 @@ export const Header = ({ onMenuToggle }) => {
           {searchOpen && normalizedQuery.length >= 2 && (
             <div className="absolute left-0 right-0 top-12 overflow-hidden rounded-xl border border-border bg-background shadow-xl">
               {events.length === 0 && colleges.length === 0 ? <p className="p-4 text-sm text-muted-foreground">No events, colleges, or artists found.</p> : <>
-                {events.map((event) => <Link key={event.id} to={`/events/${event.slug}`} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent"><CalendarDays className="h-4 w-4 text-primary" /><span className="min-w-0 flex-1 truncate">{event.title}</span><span className="truncate text-xs text-muted-foreground">{event.college_name}</span></Link>)}
-                {colleges.map((college) => <Link key={college.id} to={`/colleges/${college.slug}`} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent"><Building2 className="h-4 w-4 text-primary" /><span className="min-w-0 flex-1 truncate">{college.name}</span><span className="truncate text-xs text-muted-foreground">{college.location}</span></Link>)}
+                {events.map((event: SearchItem) => <Link key={event.id} to={`/events/${event.slug}`} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent"><CalendarDays className="h-4 w-4 text-primary" /><span className="min-w-0 flex-1 truncate">{event.title}</span><span className="truncate text-xs text-muted-foreground">{event.college_name}</span></Link>)}
+                {colleges.map((college: SearchItem) => <Link key={college.id} to={`/colleges/${college.slug}`} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent"><Building2 className="h-4 w-4 text-primary" /><span className="min-w-0 flex-1 truncate">{college.name}</span><span className="truncate text-xs text-muted-foreground">{college.location}</span></Link>)}
                 <button type="button" onClick={(event) => submitSearch(event)} className="w-full border-t border-border px-4 py-3 text-left text-sm font-medium text-primary hover:bg-accent">View all results for “{normalizedQuery}”</button>
               </>}
             </div>

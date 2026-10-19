@@ -35,7 +35,7 @@ type EventFormData = {
   poster_url: string;
 };
 
-const normalizeImageUrl = (input) => {
+const normalizeImageUrl = (input: string | null | undefined) => {
   if (!input || typeof input !== 'string') return '';
   let url = input.trim();
   if (!url) return '';
@@ -57,7 +57,7 @@ const normalizeImageUrl = (input) => {
   // Imgur page link to direct image
   if (/^https?:\/\/imgur\.com\/([a-zA-Z0-9]+)$/i.test(url)) {
     const match = url.match(/^https?:\/\/imgur\.com\/([a-zA-Z0-9]+)$/i);
-    return `https://i.imgur.com/${match[1]}.jpg`;
+    if (match) return `https://i.imgur.com/${match[1]}.jpg`;
   }
 
   // Unsplash photo page link to direct photo
@@ -97,8 +97,8 @@ export const HostEventPage = () => {
     poster_url: '',
   });
   const [posterPreviewStatus, setPosterPreviewStatus] = useState('idle'); // 'idle' | 'loading' | 'loaded' | 'error'
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const { data: collegeData } = useQuery({
     queryKey: ['colleges'],
@@ -106,7 +106,7 @@ export const HostEventPage = () => {
   });
   const colleges = collegeData?.data?.colleges || [];
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -122,7 +122,7 @@ export const HostEventPage = () => {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = event.target.result;
+      const result = event.target?.result;
       if (typeof result !== 'string') return;
       const img = new Image();
       img.onload = () => {
@@ -142,6 +142,7 @@ export const HostEventPage = () => {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+        if (!ctx) return;
         ctx.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
         setFormData(prev => ({ ...prev, poster_url: compressedDataUrl }));
@@ -194,7 +195,7 @@ export const HostEventPage = () => {
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
@@ -228,16 +229,17 @@ export const HostEventPage = () => {
     try {
       await createEventMutation.mutateAsync(formData);
     } catch (err) {
+      const requestError = err instanceof Error ? err : new Error();
       const message =
-        err.response?.data?.message ||
-        err.response?.data?.errors?.[0]?.message ||
+        requestError.response?.data?.message ||
+        requestError.response?.data?.errors?.[0]?.message ||
         'Failed to create event.';
       setError(message);
     }
   };
 
   // Handle automatic slug generation from title
-  const handleTitleChange = (e) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     setFormData(prev => ({
       ...prev,
@@ -305,7 +307,7 @@ export const HostEventPage = () => {
               <Label htmlFor="college_id">Host College *</Label>
               <select id="college_id" required value={formData.college_id} onChange={(e) => setFormData(prev => ({ ...prev, college_id: e.target.value }))} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground">
                 <option value="">Choose a college</option>
-                {colleges.map((college) => <option key={college.id} value={college.id}>{college.name}</option>)}
+                {colleges.map((college: { id: string; name: string }) => <option key={college.id} value={college.id}>{college.name}</option>)}
               </select>
             </div>
 

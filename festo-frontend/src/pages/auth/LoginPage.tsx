@@ -16,12 +16,12 @@ export const LoginPage = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const from = location.state?.from?.pathname || (typeof location.state?.from === 'string' ? location.state.from : null) || '/';
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
@@ -30,9 +30,10 @@ export const LoginPage = () => {
       await login({ email, password });
       navigate(from, { replace: true });
     } catch (err) {
+      const requestError = err instanceof Error ? err : new Error();
       const message =
-        err.response?.data?.message ||
-        err.response?.data?.errors?.[0]?.message ||
+        requestError.response?.data?.message ||
+        requestError.response?.data?.errors?.[0]?.message ||
         'Failed to sign in. Please verify your credentials.';
       setError(message);
     } finally {

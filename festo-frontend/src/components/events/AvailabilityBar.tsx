@@ -1,7 +1,14 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 
-export const AvailabilityBar = ({ capacity, registeredCount, className = '', showLabel = true }) => {
+interface AvailabilityBarProps {
+  capacity?: number | null;
+  registeredCount?: number | null;
+  className?: string;
+  showLabel?: boolean;
+}
+
+export const AvailabilityBar = ({ capacity, registeredCount, className = '', showLabel = true }: AvailabilityBarProps) => {
   if (!capacity) {
     return (
       <div className={`flex items-center gap-1.5 text-xs text-emerald-400 font-semibold ${className}`}>

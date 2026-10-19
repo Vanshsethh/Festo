@@ -15,6 +15,7 @@ import { eventsService } from '../../services/events.service.js';
 import { Input } from '../ui/input.jsx';
 import { Label } from '../ui/label.jsx';
 import { Button } from '../ui/button.jsx';
+import type { EventRecord } from '../../types/api.js';
 
 const CATEGORIES = [
   'FEST', 'CULTURAL', 'DANCE', 'MUSIC', 'TECHNICAL', 'SPORTS', 'HACKATHON',
@@ -22,7 +23,7 @@ const CATEGORIES = [
   'DRAMA_THEATRE', 'ART_DESIGN', 'OTHER'
 ];
 
-const toDateTimeLocal = (isoString) => {
+const toDateTimeLocal = (isoString?: string | null) => {
   if (!isoString) return '';
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return '';
@@ -34,7 +35,7 @@ const toDateTimeLocal = (isoString) => {
 type EditEventModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  event: any;
+  event: EventRecord | null;
   onUpdated?: (updatedEvent?: unknown) => void;
 };
 
@@ -55,7 +56,7 @@ export const EditEventModal = ({ isOpen, onClose, event, onUpdated = () => undef
   });
 
   const [posterPreviewStatus, setPosterPreviewStatus] = useState('idle');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Populate form when event changes or modal opens
   useEffect(() => {
@@ -94,10 +95,10 @@ export const EditEventModal = ({ isOpen, onClose, event, onUpdated = () => undef
   }, [isOpen]);
 
   const updateMutation = useMutation({
-    mutationFn: (payload: Record<string, unknown>) => eventsService.update(event.id, payload),
+    mutationFn: (payload: Record<string, unknown>) => eventsService.update(event?.id ?? '', payload),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['event', event.slug] });
+      queryClient.invalidateQueries({ queryKey: ['event', event?.slug] });
       queryClient.invalidateQueries({ queryKey: ['events', 'mine'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'user'] });
       if (onUpdated) onUpdated(response?.data?.event);
@@ -114,7 +115,7 @@ export const EditEventModal = ({ isOpen, onClose, event, onUpdated = () => undef
 
   if (!isOpen || !event) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 

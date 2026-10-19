@@ -1,0 +1,9 @@
+node_modules
+build
+.env
+.env.*
+*.log
+*.cookie
+cookies.txt
+.git
+npm-debug.log*

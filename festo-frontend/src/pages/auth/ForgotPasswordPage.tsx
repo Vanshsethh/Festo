@@ -13,7 +13,7 @@ export const ForgotPasswordPage = () => {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setSuccess('');
@@ -22,7 +22,8 @@ export const ForgotPasswordPage = () => {
       const response = await authService.forgotPassword(email);
       setSuccess(response.data?.message || 'If an account exists for that email, we have sent a password-reset link.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to request a password reset. Please try again.');
+      const requestError = err instanceof Error ? err : new Error();
+      setError(requestError.response?.data?.message || 'Unable to request a password reset. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

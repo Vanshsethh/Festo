@@ -1,16 +1,24 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
-const ToastContext = createContext(null);
+type ToastType = 'success' | 'error' | 'info';
+type Toast = { id: string; message: string; type: ToastType };
+type ToastContextValue = {
+  success: (message: string, duration?: number) => void;
+  error: (message: string, duration?: number) => void;
+  info: (message: string, duration?: number) => void;
+};
 
-export const ToastProvider = ({ children }) => {
-  const [toasts, setToasts] = useState([]);
+const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
-  const removeToast = useCallback((id) => {
+export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const showToast = useCallback((message, type = 'success', duration = 4000) => {
+  const showToast = useCallback((message: string, type: ToastType = 'success', duration = 4000) => {
     const id = Date.now() + Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
 
@@ -22,9 +30,9 @@ export const ToastProvider = ({ children }) => {
   }, [removeToast]);
 
   const toast = {
-    success: (msg, duration) => showToast(msg, 'success', duration),
-    error: (msg, duration) => showToast(msg, 'error', duration),
-    info: (msg, duration) => showToast(msg, 'info', duration),
+    success: (msg: string, duration?: number) => showToast(msg, 'success', duration),
+    error: (msg: string, duration?: number) => showToast(msg, 'error', duration),
+    info: (msg: string, duration?: number) => showToast(msg, 'info', duration),
   };
 
   return (
@@ -63,9 +71,9 @@ export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) {
     return {
-      success: (msg) => console.log('Toast success:', msg),
-      error: (msg) => console.error('Toast error:', msg),
-      info: (msg) => console.log('Toast info:', msg),
+      success: (msg: string) => console.log('Toast success:', msg),
+      error: (msg: string) => console.error('Toast error:', msg),
+      info: (msg: string) => console.log('Toast info:', msg),
     };
   }
   return context;

@@ -21,9 +21,25 @@ import {
 import { ticketsService } from '../../services/tickets.service.js';
 import { useToast } from '../../components/common/Toast.jsx';
 
+type TicketStatus = 'upcoming' | 'used' | 'cancelled';
+interface TicketPreview {
+  ticket_id: string;
+  start_date: string;
+  status?: string;
+  check_in_status?: string;
+  registration_status?: string;
+  ticket_number?: string | number;
+  quantity?: number;
+  poster_url?: string | null;
+  title: string;
+  college_name?: string;
+  venue?: string;
+  ticket_code?: string;
+}
+
 export const MyTicketsPage = () => {
-  const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' | 'used' | 'cancelled'
-  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [activeTab, setActiveTab] = useState<TicketStatus>('upcoming'); // 'upcoming' | 'used' | 'cancelled'
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const toast = useToast();
 
@@ -31,10 +47,10 @@ export const MyTicketsPage = () => {
     queryKey: ['tickets'],
     queryFn: ticketsService.listMine,
     refetchInterval: (query) =>
-      query.state.data?.data?.tickets?.some((ticket) => !ticket.ticket_id) ? 3000 : false,
+      query.state.data?.data?.tickets?.some((ticket: TicketPreview) => !ticket.ticket_id) ? 3000 : false,
   });
 
-  const tickets = data?.data?.tickets || [];
+  const tickets: TicketPreview[] = data?.data?.tickets || [];
 
   // Auto-select first ticket if available
   useEffect(() => {
@@ -45,7 +61,7 @@ export const MyTicketsPage = () => {
 
   const { data: ticketData, isLoading: isLoadingPass } = useQuery({
     queryKey: ['tickets', selectedTicketId],
-    queryFn: () => ticketsService.getMine(selectedTicketId),
+    queryFn: () => ticketsService.getMine(selectedTicketId as string),
     enabled: Boolean(selectedTicketId),
   });
 
@@ -53,25 +69,25 @@ export const MyTicketsPage = () => {
 
   // Categorize tickets into Upcoming, Used, Cancelled
   const categorizedTickets = {
-    upcoming: tickets.filter((t) => {
+    upcoming: tickets.filter((t: TicketPreview) => {
       const isConcluded = new Date(t.start_date) < new Date(Date.now() - 3600000 * 12);
       const isCheckedIn = t.status === 'USED' || t.check_in_status === 'CHECKED_IN';
       const isCancelled = t.status === 'CANCELLED' || t.registration_status === 'CANCELLED';
       return !isCheckedIn && !isCancelled && !isConcluded;
     }),
-    used: tickets.filter((t) => {
+    used: tickets.filter((t: TicketPreview) => {
       const isConcluded = new Date(t.start_date) < new Date(Date.now() - 3600000 * 12);
       const isCheckedIn = t.status === 'USED' || t.check_in_status === 'CHECKED_IN';
       return (isCheckedIn || isConcluded) && t.status !== 'CANCELLED';
     }),
     cancelled: tickets.filter(
-      (t) => t.status === 'CANCELLED' || t.registration_status === 'CANCELLED'
+      (t: TicketPreview) => t.status === 'CANCELLED' || t.registration_status === 'CANCELLED'
     ),
   };
 
   const currentList = categorizedTickets[activeTab] || [];
 
-  const handleRevealQR = (ticketId) => {
+  const handleRevealQR = (ticketId: string) => {
     setSelectedTicketId(ticketId);
     setIsQRModalOpen(true);
   };
@@ -105,9 +121,9 @@ export const MyTicketsPage = () => {
       {/* Tabs: Upcoming | Used | Cancelled */}
       <div className="flex items-center gap-2 border-b border-white/10 pb-3">
         {[
-          { key: 'upcoming', label: 'Upcoming Passes', count: categorizedTickets.upcoming.length },
-          { key: 'used', label: 'Used / Concluded', count: categorizedTickets.used.length },
-          { key: 'cancelled', label: 'Cancelled', count: categorizedTickets.cancelled.length },
+          { key: 'upcoming' as TicketStatus, label: 'Upcoming Passes', count: categorizedTickets.upcoming.length },
+          { key: 'used' as TicketStatus, label: 'Used / Concluded', count: categorizedTickets.used.length },
+          { key: 'cancelled' as TicketStatus, label: 'Cancelled', count: categorizedTickets.cancelled.length },
         ].map((tab) => {
           const isActive = activeTab === tab.key;
           return (

@@ -13,20 +13,29 @@ const resultStyle = {
   UNAUTHORIZED: { label: 'Unauthorized for this event', icon: ShieldX, className: 'border-destructive/30 bg-destructive/10 text-destructive' },
 };
 
+type CheckinStatus = keyof typeof resultStyle;
+type CheckinResult = {
+  status: CheckinStatus;
+  message?: string;
+  attendee?: { name: string };
+  event?: { title: string };
+  checked_in_at?: string;
+};
+
 export const CheckinScannerPage = () => {
   const [token, setToken] = React.useState('');
-  const [result, setResult] = React.useState(null);
-  const inputRef = React.useRef(null);
+  const [result, setResult] = React.useState<CheckinResult | null>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const scan = useMutation({
     mutationFn: checkinsService.scan,
     onSuccess: (response) => {
-      setResult(response.data);
+      setResult(response.data as CheckinResult);
       setToken('');
       inputRef.current?.focus();
     },
-    onError: (error) => setResult({ status: 'INVALID_TICKET', message: error.response?.data?.message || 'The scan could not be processed.' }),
+    onError: (error: Error) => setResult({ status: 'INVALID_TICKET', message: error.response?.data?.message || 'The scan could not be processed.' }),
   });
-  const onSubmit = (event) => {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token.trim() || scan.isPending) return;
     setResult(null);

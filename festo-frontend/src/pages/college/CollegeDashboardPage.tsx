@@ -9,12 +9,15 @@ import { Button } from '../../components/ui/button.jsx';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import { EventsManagementPage } from './EventsManagementPage.jsx';
 import { CollegeMembersSection } from './CollegeMembersSection.jsx';
+import type { EventRecord } from '../../types/api.js';
+
+interface CheckInRecord { event_id: string; checked_in_at: string; attendee_name: string; event_title: string; checked_in_by_name: string; }
 
 export const CollegeDashboardPage = () => {
   const { user } = useAuth();
   const { data, isLoading } = useQuery({ queryKey: ['dashboard', 'college'], queryFn: dashboardService.college });
   if (isLoading) return <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 lg:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <div key={i} className="skeleton h-28 rounded-2xl" />)}</div>;
-  const { metrics = {}, upcoming_events: upcomingEvents = [], recent_check_ins: recentCheckIns = [] } = data?.data || {};
+  const { metrics = {}, upcoming_events: upcomingEvents = [], recent_check_ins: recentCheckIns = [] }: { metrics?: Record<string, number>; upcoming_events?: EventRecord[]; recent_check_ins?: CheckInRecord[] } = data?.data || {};
   const attendanceRate = metrics.registrations ? Math.round((metrics.check_ins / metrics.registrations) * 100) : 0;
   return <div className="mx-auto max-w-7xl space-y-7 py-8">
     <section className="glass-panel relative overflow-hidden rounded-3xl p-6 sm:p-8"><div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-fuchsia-500/15 blur-3xl" /><div className="relative flex flex-wrap items-end justify-between gap-5"><div><p className="text-[11px] font-bold uppercase tracking-[.22em] text-fuchsia-300">Organizer workspace</p><h1 className="mt-2 text-3xl font-extrabold tracking-tight">Run your campus events with confidence.</h1><p className="mt-2 text-sm text-muted-foreground">Registrations, attendance, and event operations in one place.</p></div><Button asChild className="gap-2 bg-gradient-to-r from-fuchsia-600 to-violet-600"><Link to="/organizer/checkin"><QrCode className="h-4 w-4" />Scan tickets <ArrowRight className="h-4 w-4" /></Link></Button></div></section>

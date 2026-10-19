@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Header } from '../components/common/Header.jsx';
 import { AppSidebar } from '../components/common/AppSidebar.jsx';
 
-export const RootLayout = ({ children }) => {
+export const RootLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Desktop starts as a compact rail and expands whenever it is hovered.
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);

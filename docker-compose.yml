@@ -50,7 +50,8 @@ services:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/festo
       REDIS_URL: redis://redis:6379
-      CORS_ORIGIN: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5175
+      FRONTEND_URL: http://localhost:5175
       JWT_SECRET: ${JWT_SECRET:-festo_super_secret_jwt_key_at_least_32_chars_long_12345}
     depends_on:
       postgres:
@@ -85,7 +86,7 @@ services:
     container_name: festo_frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "5175:5175"
     environment:
       - VITE_API_URL=http://localhost:5002
     volumes:

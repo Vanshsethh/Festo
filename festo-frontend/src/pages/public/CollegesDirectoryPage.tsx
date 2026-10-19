@@ -20,6 +20,9 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { INDIAN_COLLEGES } from '../../data/indianColleges.js';
 
+interface CollegeDirectoryItem { id: string; name: string; slug?: string; location?: string | null; cover_url?: string | null; logo_url?: string | null; verification_status?: string; description?: string | null; published_events_count?: number; eventSearchTerm?: string; isCatalogCollege?: boolean; }
+interface RecentCollege { id: string; expiresAt: number; }
+
 export const CollegesDirectoryPage = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -29,7 +32,7 @@ export const CollegesDirectoryPage = () => {
     try {
       const now = Date.now();
       const saved = JSON.parse(localStorage.getItem('festo_recent_colleges') || '[]');
-      const active = Array.isArray(saved) ? saved.filter((item) => item?.expiresAt > now) : [];
+      const active: RecentCollege[] = Array.isArray(saved) ? saved.filter((item: RecentCollege) => item?.expiresAt > now) : [];
       localStorage.setItem('festo_recent_colleges', JSON.stringify(active));
       return active;
     } catch {
@@ -52,7 +55,7 @@ export const CollegesDirectoryPage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const registeredColleges = allCollegesData?.data?.colleges || [];
+  const registeredColleges: CollegeDirectoryItem[] = allCollegesData?.data?.colleges || [];
   // The campus picker intentionally uses the complete local college catalog,
   // not only the small set of colleges that have registered on Festo so far.
   const allDatabaseColleges = useMemo(() => {
@@ -88,11 +91,11 @@ export const CollegesDirectoryPage = () => {
   const colleges = data?.data?.colleges || [];
   const pagination = data?.data?.pagination || { total: 0, totalPages: 1 };
   const recentlyViewedColleges = recentCollegeHistory
-    .map((historyItem) => registeredColleges.find((college) => college.id === historyItem.id))
-    .filter(Boolean);
+    .map((historyItem: RecentCollege) => registeredColleges.find((college: CollegeDirectoryItem) => college.id === historyItem.id))
+    .filter((college): college is CollegeDirectoryItem => Boolean(college));
 
   // Set or clear saved campus
-  const handleSetMyCollege = (college) => {
+  const handleSetMyCollege = (college: CollegeDirectoryItem) => {
     const payload = {
       id: college.id,
       name: college.name,
@@ -119,7 +122,7 @@ export const CollegesDirectoryPage = () => {
   };
 
   // When user selects a college from the database dropdown
-  const handleSelectFromDatabase = (collegeId) => {
+  const handleSelectFromDatabase = (collegeId: string) => {
     setSelectedCollegeId(collegeId);
     if (!collegeId) {
       setSearch('');
@@ -137,7 +140,7 @@ export const CollegesDirectoryPage = () => {
   };
 
   // When user types in direct search input
-  const handleDirectSearchChange = (value) => {
+  const handleDirectSearchChange = (value: string) => {
     setSearch(value);
     setSelectedCollegeId('');
     setPage(1);
@@ -383,7 +386,7 @@ export const CollegesDirectoryPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {colleges.map((college) => (
+          {colleges.map((college: CollegeDirectoryItem) => (
               <CollegeCard
                 key={college.id}
                 college={college}

@@ -5,6 +5,7 @@ festo-frontend/dist/
 
 # Local environment configuration and OS files
 **/.env
+**/.env.production
 **/*.local
 **/*.cookie
 **/cookies.txt

@@ -1,10 +1,23 @@
 import React, { createContext, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/auth.service.js';
+import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials } from '../services/auth.service.js';
 
-const AuthContext = createContext(null);
+interface AuthContextValue {
+  user: AuthUser | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  isUser: boolean;
+  isOrganizer: boolean;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
+  register: (data: RegisterCredentials) => Promise<AuthResponse>;
+  logout: () => Promise<AuthResponse>;
+  refetchUser: () => Promise<unknown>;
+}
 
-export const AuthProvider = ({ children }) => {
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
   const {
@@ -20,7 +33,7 @@ export const AuthProvider = ({ children }) => {
         const res = await authService.getMe();
         return res?.data?.user || null;
       } catch (err) {
-        if (err.response?.status === 401) {
+        if (err instanceof Error && err.response?.status === 401) {
           localStorage.removeItem('festo_token');
         }
         return null;
@@ -33,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   const user = data || null;
 
   const loginMutation = useMutation({
-    mutationFn: (credentials) => authService.login(credentials),
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onSuccess: (res) => {
       const token = res?.data?.token;
       if (token) {
@@ -44,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   });
 
   const registerMutation = useMutation({
-    mutationFn: (data) => authService.register(data),
+    mutationFn: (data: RegisterCredentials) => authService.register(data),
     onSuccess: (res) => {
       const token = res?.data?.token;
       if (token) {
@@ -63,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     },
   });
 
-  const value = {
+  const value: AuthContextValue = {
     user,
     isLoading: isLoading || isFetching,
     isAuthenticated: Boolean(user),
@@ -72,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
-    refetchUser: refetch,
+    refetchUser: async () => refetch(),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

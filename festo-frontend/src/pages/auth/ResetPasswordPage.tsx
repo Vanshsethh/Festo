@@ -16,7 +16,7 @@ export const ResetPasswordPage = () => {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     if (!token) return setError('This password-reset link is invalid.');
@@ -26,7 +26,8 @@ export const ResetPasswordPage = () => {
       const response = await authService.resetPassword(token, password);
       setSuccess(response.data?.message || 'Password reset successfully. You can now sign in.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to reset your password.');
+      const requestError = err instanceof Error ? err : new Error();
+      setError(requestError.response?.data?.message || 'Unable to reset your password.');
     } finally {
       setIsSubmitting(false);
     }

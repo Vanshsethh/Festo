@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { VerifiedBadge } from '../../components/colleges/VerifiedBadge.jsx';
 
+interface AdminCollege { id: string; name: string; verification_status: string; logo_url?: string | null; [key: string]: string | number | boolean | null | undefined; }
+
 export const AdminCollegesPage = () => {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('');
@@ -32,7 +34,7 @@ export const AdminCollegesPage = () => {
     queryFn: () => collegesService.adminListColleges({ status: statusFilter || undefined, search }),
   });
 
-  const colleges = data?.data?.colleges || [];
+  const colleges: AdminCollege[] = data?.data?.colleges || [];
   const pagination = data?.data?.pagination || { total: 0 };
 
   const approveMutation = useMutation({

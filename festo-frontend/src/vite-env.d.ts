@@ -6,5 +6,5 @@ declare module '*.png' {
 }
 
 interface Error {
-  response?: { data?: { message?: string; errors?: Array<{ message?: string }> } };
+  response?: { status?: number; data?: { message?: string; errors?: Array<{ message?: string }> } };
 }

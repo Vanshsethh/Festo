@@ -14,7 +14,8 @@ export const CollegeDetailPage = () => {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['college', identifier],
-    queryFn: () => collegesService.getCollege(identifier),
+    queryFn: () => collegesService.getCollege(identifier ?? ''),
+    enabled: Boolean(identifier),
   });
 
   const college = data?.data?.college;

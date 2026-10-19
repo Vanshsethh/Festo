@@ -18,6 +18,9 @@ import { eventsService } from '../../services/events.service.js';
 import { collegesService } from '../../services/colleges.service.js';
 import { EventCard } from '../../components/events/EventCard.jsx';
 import { Input } from '../../components/ui/input.jsx';
+import type { EventRecord } from '../../types/api.js';
+
+interface CollegeFilter { id: string; name: string; }
 
 // Re-export EventDetailPage so existing imports never break
 export { EventDetailPage } from './EventDetailPage.jsx';
@@ -79,8 +82,8 @@ export const EventsPage = () => {
     queryFn: () => collegesService.getVerifiedColleges({ limit: 50 }),
   });
 
-  const rawEvents = useMemo(() => data?.data?.events || [], [data]);
-  const colleges = useMemo(() => collegesData?.data?.colleges || [], [collegesData]);
+  const rawEvents: EventRecord[] = useMemo(() => data?.data?.events || [], [data]);
+  const colleges: CollegeFilter[] = useMemo(() => collegesData?.data?.colleges || [], [collegesData]);
 
   // Client-side date preset and college filter
   const filteredEvents = useMemo(() => {

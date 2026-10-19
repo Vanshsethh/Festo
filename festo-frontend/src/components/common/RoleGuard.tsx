@@ -5,7 +5,12 @@ import { ShieldAlert } from 'lucide-react';
 import { Button } from '../ui/button.jsx';
 import { Link } from 'react-router-dom';
 
-export const RoleGuard = ({ allowedRoles = [], children }) => {
+interface RoleGuardProps {
+  allowedRoles?: string[];
+  children: React.ReactNode;
+}
+
+export const RoleGuard = ({ allowedRoles = [], children }: RoleGuardProps) => {
   const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -20,7 +25,7 @@ export const RoleGuard = ({ allowedRoles = [], children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(user?.role)) {
+  if (!user || !allowedRoles.includes(user.role)) {
     return (
       <div className="max-w-md mx-auto my-12 p-8 rounded-2xl border border-destructive/30 bg-destructive/5 text-center space-y-4 shadow-xl">
         <div className="w-12 h-12 mx-auto rounded-full bg-destructive/10 text-destructive flex items-center justify-center">

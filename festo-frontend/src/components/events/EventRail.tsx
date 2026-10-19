@@ -1,6 +1,17 @@
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { EventCard } from './EventCard.jsx';
+import type { EventRecord } from '../../types/api.js';
+
+interface EventRailProps {
+  title: string;
+  subtitle?: string;
+  badge?: React.ReactNode;
+  events?: EventRecord[];
+  actionText?: string;
+  actionHref?: string;
+  emptyMessage?: string;
+}
 
 export const EventRail = ({
   title,
@@ -10,10 +21,10 @@ export const EventRail = ({
   actionText = 'View all',
   actionHref,
   emptyMessage = 'No events scheduled currently.',
-}) => {
-  const scrollRef = useRef(null);
+}: EventRailProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (direction) => {
+  const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const offset = direction === 'left' ? -360 : 360;
       scrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });

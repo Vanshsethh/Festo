@@ -10,7 +10,14 @@ const publicLinks = [
   { label: 'Colleges', to: '/colleges', icon: GraduationCap },
 ];
 
-export const AppSidebar = ({ open, onClose, collapsed, onCollapse }) => {
+interface AppSidebarProps {
+  open: boolean;
+  onClose: () => void;
+  collapsed: boolean;
+  onCollapse?: () => void;
+}
+
+export const AppSidebar = ({ open, onClose, collapsed, onCollapse }: AppSidebarProps) => {
   const { user, isAuthenticated, isUser, isOrganizer, logout } = useAuth();
   const navigate = useNavigate();
   const links: Array<{ label: string; to: string; icon: React.ElementType; accent?: boolean }> = [
@@ -60,11 +67,11 @@ export const AppSidebar = ({ open, onClose, collapsed, onCollapse }) => {
         <div className="border-t border-border pt-3">
           {isAuthenticated ? (
             <>
-              <Link to={profilePath} onClick={onClose} className="mb-2 flex items-center gap-3 rounded-xl p-2 hover:bg-secondary">
+              <Link to={profilePath} onClick={onClose} className="festo-sidebar-account mb-2 flex items-center gap-3 rounded-xl p-2 hover:bg-secondary">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white shadow-sm">{user?.name?.[0]?.toUpperCase() || 'U'}</div>
-                {!collapsed && <div className="min-w-0"><p className="truncate text-sm font-semibold text-foreground">{user?.name}</p><p className="truncate text-xs text-muted-foreground">{user?.email}</p></div>}
+                {!collapsed && <div className="min-w-0"><p className="festo-sidebar-account-name truncate text-sm font-semibold">{user?.name}</p><p className="festo-sidebar-account-email truncate text-xs">{user?.email}</p></div>}
               </Link>
-              <button type="button" onClick={signOut} title={collapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-[#f5e5e7] hover:text-[#a84f5c]"><LogOut className="h-5 w-5 shrink-0" />{!collapsed && 'Sign out'}</button>
+              <button type="button" onClick={signOut} title={collapsed ? 'Sign out' : undefined} className="festo-sidebar-signout flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-[#f5e5e7] hover:text-[#a84f5c]"><LogOut className="h-5 w-5 shrink-0" />{!collapsed && 'Sign out'}</button>
             </>
           ) : (
             <Link to="/login" onClick={onClose} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-primary hover:bg-accent"><UserRound className="h-5 w-5 shrink-0" />{!collapsed && 'Sign in to Festo'}</Link>

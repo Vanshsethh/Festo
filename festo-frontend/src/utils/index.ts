@@ -1,5 +1,5 @@
 // Format date to user-friendly string
-export function formatDate(dateString) {
+export function formatDate(dateString?: string | null) {
   if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {

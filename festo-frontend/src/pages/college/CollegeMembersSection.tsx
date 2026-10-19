@@ -8,13 +8,13 @@ import { Label } from '../../components/ui/label.jsx';
 import { Users, UserPlus, Trash2, Shield, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 
-export const CollegeMembersSection = ({ collegeId }) => {
+export const CollegeMembersSection = ({ collegeId }: { collegeId: string }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('COLLEGE_STAFF');
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['colleges', collegeId, 'members'],
@@ -45,7 +45,7 @@ export const CollegeMembersSection = ({ collegeId }) => {
     },
   });
 
-  const handleAdd = (e) => {
+  const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email.trim()) return;
     setError(null);
@@ -134,7 +134,7 @@ export const CollegeMembersSection = ({ collegeId }) => {
           <p className="text-xs text-muted-foreground text-center py-4">No team members added yet.</p>
         ) : (
           <div className="divide-y divide-border/60 rounded-xl border border-border overflow-hidden">
-            {members.map((member) => (
+            {members.map((member: { id: string; name?: string; role: string; email: string; user_id: string }) => (
               <div
                 key={member.id}
                 className="p-3.5 sm:px-4 flex items-center justify-between gap-3 bg-card/50 hover:bg-muted/30 transition-colors"

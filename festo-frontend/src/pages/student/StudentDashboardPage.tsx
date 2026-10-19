@@ -22,15 +22,18 @@ import { MetricCard } from '../../components/common/MetricCard.jsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card.jsx';
 import { Button } from '../../components/ui/button.jsx';
 import { EditEventModal } from '../../components/events/EditEventModal.jsx';
+import type { EventRecord } from '../../types/api.js';
 
-const dateTime = (value) =>
+interface ParticipatedEvent { registration_id: string; category?: string; quantity?: number; title: string; slug: string; college_name?: string; poster_url?: string | null; start_date: string; venue?: string; }
+
+const dateTime = (value: string) =>
   new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 
 export const StudentDashboardPage = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'hosted' | 'participated'
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [editingEvent, setEditingEvent] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventRecord | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['dashboard', 'user'],
@@ -179,7 +182,7 @@ export const StudentDashboardPage = () => {
             </Card>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
-              {hostedEvents.map((event) => (
+              {hostedEvents.map((event: EventRecord) => (
                 <Card key={event.id} className="overflow-hidden border-border/70 hover:border-purple-500/30 transition-all flex flex-col justify-between">
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start justify-between gap-3">
@@ -307,7 +310,7 @@ export const StudentDashboardPage = () => {
             </Card>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
-              {participatedEvents.map((item) => (
+              {participatedEvents.map((item: ParticipatedEvent) => (
                 <Card key={item.registration_id} className="overflow-hidden border-border/70 hover:border-purple-500/30 transition-all flex flex-col justify-between">
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start justify-between gap-3">
@@ -317,7 +320,7 @@ export const StudentDashboardPage = () => {
                             {item.category}
                           </span>
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                            {item.quantity || 1} Pass{item.quantity > 1 ? 'es' : ''} Claimed
+                            {item.quantity || 1} Pass{(item.quantity ?? 1) > 1 ? 'es' : ''} Claimed
                           </span>
                         </div>
                         <h3 className="font-bold text-lg leading-tight mt-1.5">{item.title}</h3>

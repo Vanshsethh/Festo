@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Building2, Bookmark, Share2, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 import { AvailabilityBar } from './AvailabilityBar.jsx';
 import { useToast } from '../common/Toast.jsx';
+import type { EventRecord } from '../../types/api.js';
 
-export const FeaturedEvent = ({ event }) => {
+export const FeaturedEvent = ({ event }: { event: EventRecord | null }) => {
   const [imgError, setImgError] = useState(false);
   const [isSaved, setIsSaved] = useState(() => {
     try {
@@ -20,14 +21,14 @@ export const FeaturedEvent = ({ event }) => {
 
   const hasPoster = Boolean(event.poster_url?.trim()) && !imgError;
 
-  const toggleSave = (e) => {
+  const toggleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       const saved = JSON.parse(localStorage.getItem('festo_saved_events') || '[]');
       let updated;
       if (isSaved) {
-        updated = saved.filter((id) => id !== event.id);
+        updated = saved.filter((id: string) => id !== event.id);
         setIsSaved(false);
         toast.info(`Removed "${event.title}" from saved`);
       } else {
@@ -41,7 +42,7 @@ export const FeaturedEvent = ({ event }) => {
     }
   };
 
-  const handleShare = (e) => {
+  const handleShare = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const url = `${window.location.origin}/events/${event.slug}`;
@@ -51,7 +52,7 @@ export const FeaturedEvent = ({ event }) => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return 'Date TBA';
     return new Date(dateString).toLocaleDateString(undefined, {
       weekday: 'long',
@@ -61,7 +62,7 @@ export const FeaturedEvent = ({ event }) => {
     });
   };
 
-  const formatTime = (dateString) => {
+  const formatTime = (dateString?: string) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -81,7 +82,7 @@ export const FeaturedEvent = ({ event }) => {
         <div className="lg:col-span-7 relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:h-[420px] w-full overflow-hidden bg-slate-950">
           {hasPoster ? (
             <img
-              src={event.poster_url}
+              src={event.poster_url ?? undefined}
               alt={event.title}
               onError={() => setImgError(true)}
               className="h-full w-full object-cover transition-transform duration-700 ease-out hover:scale-105"

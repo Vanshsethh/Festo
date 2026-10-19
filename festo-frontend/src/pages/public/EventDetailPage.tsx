@@ -43,7 +43,8 @@ export const EventDetailPage = () => {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['event', slug],
-    queryFn: () => eventsService.get(slug),
+    queryFn: () => eventsService.get(slug ?? ''),
+    enabled: Boolean(slug),
   });
 
   const event = data?.data?.event;
@@ -81,7 +82,7 @@ export const EventDetailPage = () => {
   });
 
   const registered = registration.data?.data?.registrations?.find(
-    (item) => item.event_id === event?.id && item.registration_status === 'CONFIRMED'
+    (item: { event_id: string; registration_status: string }) => item.event_id === event?.id && item.registration_status === 'CONFIRMED'
   );
 
   const registerMutation = useMutation({
@@ -176,7 +177,7 @@ export const EventDetailPage = () => {
       const saved = JSON.parse(localStorage.getItem('festo_saved_events') || '[]');
       let updated;
       if (isSaved) {
-        updated = saved.filter((id) => id !== event.id);
+        updated = saved.filter((id: string) => id !== event.id);
         setIsSaved(false);
         toast.info('Removed from saved list');
       } else {

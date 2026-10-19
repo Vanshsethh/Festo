@@ -17,6 +17,9 @@ import { EventRail } from '../../components/events/EventRail.jsx';
 import { EventCard } from '../../components/events/EventCard.jsx';
 import { VisualTimeline } from '../../components/events/VisualTimeline.jsx';
 import { Input } from '../../components/ui/input.jsx';
+import type { EventRecord } from '../../types/api.js';
+
+interface CollegePreview { id: string; name: string; slug: string; location?: string; logo_url?: string | null; event_count?: number; }
 
 const CATEGORY_CHIPS = [
   { label: 'All Events', value: '' },
@@ -45,8 +48,8 @@ export const HomePage = () => {
     queryFn: () => collegesService.getVerifiedColleges({ limit: 6 }),
   });
 
-  const allEvents = useMemo(() => eventsData?.data?.events || [], [eventsData]);
-  const colleges = useMemo(() => collegesData?.data?.colleges || [], [collegesData]);
+  const allEvents: EventRecord[] = useMemo(() => eventsData?.data?.events || [], [eventsData]);
+  const colleges: CollegePreview[] = useMemo(() => collegesData?.data?.colleges || [], [collegesData]);
 
   // Featured Event (highest capacity or upcoming major fest)
   const featuredEvent = useMemo(() => {
@@ -308,7 +311,7 @@ export const HomePage = () => {
       )}
 
       {/* 9. Visual Timeline */}
-      <VisualTimeline events={allEvents} />
+      <VisualTimeline events={allEvents.map((event) => ({ ...event, venue: event.venue ?? undefined }))} />
     </div>
   );
 };

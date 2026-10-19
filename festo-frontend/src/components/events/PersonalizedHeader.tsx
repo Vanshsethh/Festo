@@ -5,6 +5,14 @@ import { Sparkles, QrCode, CalendarDays, MapPin, ArrowRight, Ticket } from 'luci
 import { useAuth } from '../../hooks/useAuth.jsx';
 import { ticketsService } from '../../services/tickets.service.js';
 
+interface UpcomingTicket {
+  start_date: string;
+  ticket_code?: string;
+  title: string;
+  venue?: string;
+  college_name?: string;
+}
+
 export const PersonalizedHeader = () => {
   const { user, isAuthenticated } = useAuth();
 
@@ -22,11 +30,11 @@ export const PersonalizedHeader = () => {
     staleTime: 1000 * 60 * 2,
   });
 
-  const tickets = ticketsData?.data?.tickets || [];
+  const tickets: UpcomingTicket[] = ticketsData?.data?.tickets || [];
   // Find the next upcoming event
   const upcomingTicket = tickets
-    .filter((t) => new Date(t.start_date) >= new Date(Date.now() - 3600000 * 4)) // not ended long ago
-    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())[0];
+    .filter((t: UpcomingTicket) => new Date(t.start_date) >= new Date(Date.now() - 3600000 * 4)) // not ended long ago
+    .sort((a: UpcomingTicket, b: UpcomingTicket) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())[0];
 
   const displayName = user?.name ? user.name.split(' ')[0] : 'Explorer';
 

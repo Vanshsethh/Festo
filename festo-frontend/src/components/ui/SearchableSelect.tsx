@@ -14,6 +14,16 @@ import { Search, ChevronDown, X, Check } from 'lucide-react';
  * - icon: ReactNode (optional leading icon)
  * - className: string (optional wrapper class)
  */
+interface SearchableSelectProps {
+  items?: string[];
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  icon?: React.ReactNode;
+  className?: string;
+}
+
 export const SearchableSelect = ({
   items = [],
   value = '',
@@ -22,19 +32,19 @@ export const SearchableSelect = ({
   searchPlaceholder = 'Search...',
   icon,
   className = '',
-}) => {
+}: SearchableSelectProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(-1);
-  const containerRef = useRef(null);
-  const inputRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filtered = query
     ? items.filter((item) => item.toLowerCase().includes(query.toLowerCase()))
     : items;
 
   const handleSelect = useCallback(
-    (item) => {
+    (item: string) => {
       onChange(item === value ? '' : item);
       setOpen(false);
       setQuery('');
@@ -48,7 +58,7 @@ export const SearchableSelect = ({
     setActiveIndex(-1);
   };
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement | HTMLInputElement>) => {
     if (event.key === 'Escape') {
       close();
       return;
@@ -72,8 +82,8 @@ export const SearchableSelect = ({
 
   // Close on outside click
   useEffect(() => {
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && e.target instanceof Node && !containerRef.current.contains(e.target)) {
         setOpen(false);
         setQuery('');
         setActiveIndex(-1);
@@ -115,7 +125,7 @@ export const SearchableSelect = ({
         {value ? (
           <X
             className="w-3.5 h-3.5 text-slate-400 hover:text-white shrink-0"
-            onClick={(e) => {
+              onClick={(e: React.MouseEvent<SVGSVGElement>) => {
               e.stopPropagation();
               onChange('');
             }}

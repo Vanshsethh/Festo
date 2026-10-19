@@ -2,12 +2,21 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
 
+type LogoSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+interface FestoLogoProps {
+  size?: LogoSize;
+  showText?: boolean;
+  href?: string;
+  className?: string;
+}
+
 export const FestoLogo = ({
   size = 'md',
   showText = true,
   href = '/',
   className = '',
-}) => {
+}: FestoLogoProps) => {
   const iconSizes = {
     xs: 'w-6 h-6 rounded-lg',
     sm: 'w-8 h-8 rounded-lg',

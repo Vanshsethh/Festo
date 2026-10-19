@@ -4,7 +4,8 @@ import { Building2, MapPin, Calendar, ArrowUpRight, Star } from 'lucide-react';
 import { VerifiedBadge } from './VerifiedBadge.jsx';
 import { Card } from '../ui/card.jsx';
 
-export const CollegeCard = ({ college, isMyCollege = false, onSetMyCollege }) => {
+type CollegeCardRecord = { id: string; name: string; slug?: string; cover_url?: string | null; logo_url?: string | null; verification_status?: string; location?: string | null; description?: string | null; published_events_count?: number };
+export const CollegeCard = ({ college, isMyCollege = false, onSetMyCollege }: { college: CollegeCardRecord; isMyCollege?: boolean; onSetMyCollege?: (college: CollegeCardRecord) => void }) => {
   const collegeUrl = `/colleges/${college.slug || college.id}`;
   const exploreUrl = `/explore?q=${encodeURIComponent(college.name)}`;
 

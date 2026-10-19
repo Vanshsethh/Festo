@@ -204,3 +204,43 @@ html, body, header, aside, main, footer, [class*="bg-[#"], .glass-panel, .glass-
 .dark .festo-college-filter .text-purple-400 {
   color: #c084fc !important;
 }
+
+/* The account block lives on the intentionally dark sidebar, not a light card.
+   These explicit colors prevent broad dark-mode card selectors from hiding it. */
+#root .festo-sidebar-account-name,
+#root .festo-sidebar-signout,
+#root .festo-sidebar-signout svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+#root .festo-sidebar-account-email {
+  color: rgba(255, 255, 255, .72) !important;
+  opacity: 1 !important;
+}
+
+/* Cards use `bg-card/90`, which is a bright surface in both themes. The legacy
+   dark-mode palette previously treated their text as if it were on the page's
+   dark canvas. Keep all normal card copy at high-contrast ink instead. */
+html.dark #root [class*="bg-card"] {
+  color: #191a20 !important;
+}
+html.dark #root [class*="bg-card"] :is(
+  h1, h2, h3, h4, h5, h6, p, label, small,
+  .text-white, .text-foreground, .text-muted-foreground,
+  [class*="text-slate-"], [class*="text-zinc-"],
+  [class*="text-pink-"], [class*="text-fuchsia-"],
+  [class*="text-purple-"], [class*="text-violet-"]
+) {
+  color: #191a20 !important;
+}
+/* Solid action buttons retain a deliberately light foreground. */
+html.dark #root [class*="bg-card"] :is(
+  .bg-primary, .bg-pink-600, .bg-fuchsia-600, .bg-purple-600,
+  .bg-violet-600, .bg-destructive, .bg-emerald-600
+),
+html.dark #root [class*="bg-card"] :is(
+  .bg-primary, .bg-pink-600, .bg-fuchsia-600, .bg-purple-600,
+  .bg-violet-600, .bg-destructive, .bg-emerald-600
+) :is(span, svg) {
+  color: #ffffff !important;
+}

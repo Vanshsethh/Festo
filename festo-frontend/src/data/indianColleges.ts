@@ -314,11 +314,11 @@ export const INDIAN_COLLEGES = [
 export const INDIAN_CITIES = [...new Set(INDIAN_COLLEGES.map(c => c.city))].sort();
 
 /** Get all colleges for a given city */
-export const getCollegesByCity = (city) =>
+export const getCollegesByCity = (city: string) =>
   INDIAN_COLLEGES.filter(c => c.city === city).sort((a, b) => a.name.localeCompare(b.name));
 
 /** Search colleges by name (case-insensitive substring match) */
-export const searchColleges = (query) => {
+export const searchColleges = (query: string) => {
   if (!query) return INDIAN_COLLEGES;
   const q = query.toLowerCase();
   return INDIAN_COLLEGES.filter(c => c.name.toLowerCase().includes(q));
