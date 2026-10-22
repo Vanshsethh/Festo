@@ -1,14 +1,17 @@
 -- Seed all Indian colleges from the frontend indianColleges.ts list.
--- Uses ON CONFLICT DO NOTHING so it's safe to run multiple times.
--- Requires at least one user in the users table (uses the first user as applied_by).
+-- Reassigns existing directory slugs to the dedicated owner so reruns repair
+-- databases previously seeded with an arbitrary user.
+-- Requires the dedicated directory owner created by `npm run seed`.
 
 DO $$
 DECLARE
   v_user_id UUID;
 BEGIN
-  SELECT id INTO v_user_id FROM users LIMIT 1;
+  SELECT id INTO v_user_id
+  FROM users
+  WHERE email = 'college-directory@festo.local';
   IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'No users found. Please register at least one user first.';
+    RAISE EXCEPTION 'Directory owner missing. Run npm run seed before this script.';
   END IF;
 
   -- Helper: insert if name does not already exist
@@ -318,6 +321,7 @@ BEGIN
     ('North Eastern Hill University (NEHU)', 'nehu', 'Shillong', 'VERIFIED', v_user_id),
     ('Rajiv Gandhi University', 'rajiv-gandhi-university', 'Itanagar', 'VERIFIED', v_user_id)
 
-  ON CONFLICT (slug) DO NOTHING;
+  ON CONFLICT (slug) DO UPDATE
+  SET applied_by = EXCLUDED.applied_by;
 
 END $$;

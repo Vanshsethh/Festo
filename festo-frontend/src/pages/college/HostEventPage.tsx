@@ -102,7 +102,29 @@ export const HostEventPage = () => {
 
   const { data: collegeData } = useQuery({
     queryKey: ['colleges'],
-    queryFn: () => collegesService.getVerifiedColleges({ limit: 100 }),
+    queryFn: async () => {
+      const firstPage = await collegesService.getVerifiedColleges({ limit: 100, page: 1 });
+      const totalPages = firstPage.data.pagination.totalPages;
+
+      if (totalPages <= 1) return firstPage;
+
+      const remainingPages = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, index) =>
+          collegesService.getVerifiedColleges({ limit: 100, page: index + 2 })
+        )
+      );
+
+      return {
+        ...firstPage,
+        data: {
+          ...firstPage.data,
+          colleges: [
+            ...firstPage.data.colleges,
+            ...remainingPages.flatMap((page) => page.data.colleges),
+          ],
+        },
+      };
+    },
   });
   const colleges = collegeData?.data?.colleges || [];
 

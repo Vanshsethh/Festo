@@ -51,6 +51,7 @@ The API is available at `http://localhost:5001`; health check: `http://localhost
 
 `npm run seed` creates or refreshes:
 
+- The verified Indian college directory used by event hosting
 - Guru Gobind Singh Indraprastha University (GGSIPU)
 - Delhi Technological University (DTU)
 - 34 published events: one event for each college in all 17 supported categories
