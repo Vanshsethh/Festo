@@ -14,7 +14,8 @@
     "migrate:up": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "seed:directory": "node seed-directory-only.js"
   },
   "dependencies": {
     "argon2": "^0.41.1",

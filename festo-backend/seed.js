@@ -1,8 +1,7 @@
 import { Pool } from 'pg';
 import argon2 from 'argon2';
-import { randomBytes } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
 import { env } from './src/config/env.js';
+import { seedCollegeDirectory } from './seed-directory.js';
 
 const pool = new Pool({ connectionString: env.DATABASE_URL });
 const categories = ['FEST', 'CULTURAL', 'DANCE', 'MUSIC', 'TECHNICAL', 'SPORTS', 'HACKATHON', 'WORKSHOP', 'CONCERT', 'COMPETITION', 'QUIZ', 'MUN', 'GAMING', 'LITERARY', 'DRAMA_THEATRE', 'ART_DESIGN', 'OTHER'];
@@ -13,10 +12,6 @@ const colleges = [
   { name: 'Guru Gobind Singh Indraprastha University', slug: 'ggsipu', location: 'Dwarka, New Delhi', owner: 'ggsipu.organizer@festo.local', short: 'GGSIPU' },
   { name: 'Delhi Technological University', slug: 'dtu', location: 'Rohini, New Delhi', owner: 'dtu.organizer@festo.local', short: 'DTU' },
 ];
-const directoryOwner = {
-  email: 'college-directory@festo.local',
-  name: 'Festo College Directory',
-};
 
 async function upsertUser(email, name) {
   const passwordHash = await argon2.hash('password123');
@@ -28,24 +23,8 @@ async function upsertUser(email, name) {
   return result.rows[0].id;
 }
 
-async function upsertDirectoryOwner() {
-  const passwordHash = await argon2.hash(randomBytes(32).toString('hex'));
-  await pool.query(
-    `INSERT INTO users (email, password_hash, name, role, status)
-     VALUES ($1, $2, $3, 'ORGANIZER', 'ACTIVE')
-     ON CONFLICT (email) DO UPDATE
-     SET password_hash = EXCLUDED.password_hash,
-         name = EXCLUDED.name,
-         role = 'ORGANIZER',
-         status = 'ACTIVE'`,
-    [directoryOwner.email, passwordHash, directoryOwner.name],
-  );
-}
-
 async function seed() {
-  await upsertDirectoryOwner();
-  const directorySql = await readFile(new URL('./seed-colleges.sql', import.meta.url), 'utf8');
-  await pool.query(directorySql);
+  await seedCollegeDirectory(pool);
 
   for (const college of colleges) {
     const ownerId = await upsertUser(college.owner, `${college.short} Events Team`);
