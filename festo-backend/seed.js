@@ -1,9 +1,13 @@
 import { Pool } from 'pg';
 import argon2 from 'argon2';
-import { env } from './src/config/env.js';
+import 'dotenv/config';
 import { seedCollegeDirectory } from './seed-directory.js';
 
-const pool = new Pool({ connectionString: env.DATABASE_URL });
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is required');
+}
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const categories = ['FEST', 'CULTURAL', 'DANCE', 'MUSIC', 'TECHNICAL', 'SPORTS', 'HACKATHON', 'WORKSHOP', 'CONCERT', 'COMPETITION', 'QUIZ', 'MUN', 'GAMING', 'LITERARY', 'DRAMA_THEATRE', 'ART_DESIGN', 'OTHER'];
 const names = {
   FEST: 'Campus Carnival', CULTURAL: 'Culture Connect', DANCE: 'Rhythm Revolution', MUSIC: 'Indie Soundwave', TECHNICAL: 'Future Tech Forum', SPORTS: 'Champions League', HACKATHON: 'Code for Tomorrow', WORKSHOP: 'Build Lab', CONCERT: 'Neon Nights', COMPETITION: 'The Grand Challenge', QUIZ: 'Mind Sprint', MUN: 'Diplomacy Summit', GAMING: 'Arena Clash', LITERARY: 'Ink & Ideas', DRAMA_THEATRE: 'Spotlight Stories', ART_DESIGN: 'Canvas Collective', OTHER: 'Campus Connect',
