@@ -305,7 +305,7 @@ export const HostEventPage = () => {
 
             <div className="space-y-2">
               <Label htmlFor="college_id">Host College *</Label>
-              <select id="college_id" required value={formData.college_id} onChange={(e) => setFormData(prev => ({ ...prev, college_id: e.target.value }))} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground">
+              <select id="college_id" required value={formData.college_id} onChange={(e) => setFormData(prev => ({ ...prev, college_id: e.target.value }))} className="w-full rounded-lg border border-border bg-white px-3 py-2 text-black">
                 <option value="">Choose a college</option>
                 {colleges.map((college: { id: string; name: string }) => <option key={college.id} value={college.id}>{college.name}</option>)}
               </select>
