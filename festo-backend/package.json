@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "start:api": "node build/server.js",
+    "start:api": "npm run seed:directory && node build/server.js",
     "start:worker": "node build/workers/index.js",
     "dev:api": "tsx watch src/server.ts",
     "dev:worker": "tsx watch src/workers/index.ts",

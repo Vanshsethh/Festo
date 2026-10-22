@@ -45,8 +45,8 @@ Seed demo content without deleting existing users or registrations:
 docker compose exec -T api npm run seed
 ```
 
-Production startup runs `npm run seed:directory` after migrations. It only creates or
-refreshes the verified college directory; it does not create demo events.
+API startup runs `npm run seed:directory` after migrations. It only creates or refreshes
+the verified college directory; it does not create demo events.
 
 The API is available at `http://localhost:5001`; health check: `http://localhost:5001/health`.
 
